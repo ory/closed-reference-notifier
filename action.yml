@@ -1,0 +1,9 @@
+name: Closed Reference Notifier
+description: GitHub action that opens an issue when a in-code refered issue/pull request is closed
+inputs:
+  token:
+    description: secrets.GITHUB_TOKEN
+    required: true
+runs:
+  using: node12
+  main: dist/index.js
