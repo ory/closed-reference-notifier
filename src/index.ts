@@ -24,10 +24,11 @@ const createIssue = (upstreamReference: string) => {
 
 const readFile = promisify(fs.readFile)
 
-const exitWithReason = (r: any) => setFailed(JSON.stringify(r))
+const exitWithReason = (r: any) => {
+  console.trace(r)
+  setFailed(JSON.stringify(r))
+}
 
-debug('will walk')
-console.log('log will walk')
 ;(async function () {
   await walkdir
     .async('.', { return_object: true })

@@ -4162,9 +4162,10 @@ const createIssue = (upstreamReference) => {
     });
 };
 const readFile = util_1.promisify(fs_1.default.readFile);
-const exitWithReason = (r) => core_1.setFailed(JSON.stringify(r));
-core_1.debug('will walk');
-console.log('log will walk');
+const exitWithReason = (r) => {
+    console.trace(r);
+    core_1.setFailed(JSON.stringify(r));
+};
 (async function () {
     await walkdir_1.default
         .async('.', { return_object: true })

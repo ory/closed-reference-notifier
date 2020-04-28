@@ -4,6 +4,10 @@ inputs:
   token:
     description: secrets.GITHUB_TOKEN
     required: true
+  ignore:
+    description: ignore directories, comma seperated list
+    required: false
+    default: .git
 runs:
   using: node12
   main: dist/index.js
