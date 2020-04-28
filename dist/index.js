@@ -4147,6 +4147,7 @@ const github_1 = __webpack_require__(469);
 const core_1 = __webpack_require__(470);
 const fs_1 = __importDefault(__webpack_require__(747));
 const walkdir_1 = __importDefault(__webpack_require__(704));
+const util_1 = __webpack_require__(669);
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
 const issueLabel = 'closed reference';
 const gitHubClient = new github_1.GitHub(core_1.getInput('token'));
@@ -4160,20 +4161,22 @@ const createIssue = (upstreamReference) => {
         labels: [issueLabel]
     });
 };
+const readFile = util_1.promisify(fs_1.default.readFile);
 core_1.debug('will walk');
 console.log('log will walk');
 (async function () {
-    walkdir_1.default.async('.', { return_object: true }).then((files) => {
+    await walkdir_1.default.async('.', { return_object: true }).then((files) => {
         core_1.debug('walking');
-        Object.entries(files).forEach(([path, stats]) => stats.isDirectory() ||
-            fs_1.default.readFile(path, (err, data) => {
-                if (err) {
-                    core_1.setFailed(JSON.stringify(err));
-                }
-                for (let match of data.toString().matchAll(referenceRegex)) {
+        return Promise.all(Object.entries(files).map(([path, stats]) => {
+            core_1.debug(`found "${path}"`);
+            if (stats.isDirectory()) {
+                return Promise.resolve();
+            }
+            return readFile(path).then((data) => {
+                return Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map((match) => {
                     const [reference, owner, repo, type, id] = match;
                     core_1.debug(`found reference "${reference}"`);
-                    gitHubClient.issues
+                    return gitHubClient.issues
                         .get({
                         owner,
                         repo,
@@ -4181,21 +4184,24 @@ console.log('log will walk');
                     })
                         .then((issue) => {
                         if (issue.data.state == 'closed') {
-                            gitHubClient.issues
+                            return gitHubClient.issues
                                 .list({
                                 labels: issueLabel
                             })
                                 .then((issues) => {
                                 if (!issues.data.find((issue) => issue.title === issueTitle(reference))) {
                                     core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
-                                    createIssue(reference).catch((res) => core_1.setFailed(JSON.stringify(res)));
+                                    return createIssue(reference)
+                                        .then(() => Promise.resolve())
+                                        .catch((res) => core_1.setFailed(JSON.stringify(res)));
                                 }
                             });
                         }
                     })
                         .catch((res) => core_1.setFailed(JSON.stringify(res)));
-                }
-            }));
+                })).then(Promise.resolve);
+            });
+        }));
     });
 })();
 
