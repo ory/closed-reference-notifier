@@ -24,63 +24,75 @@ const createIssue = (upstreamReference: string) => {
 
 const readFile = promisify(fs.readFile)
 
+const exitWithReason = (r: any) => setFailed(JSON.stringify(r))
+
 debug('will walk')
 console.log('log will walk')
 ;(async function () {
-  await walkdir.async('.', { return_object: true }).then((files) => {
-    debug('walking')
-    return Promise.all(
-      Object.entries(files).map<Promise<void>>(
-        ([path, stats]: [string, fs.Stats]): Promise<void> => {
-          debug(`found "${path}"`)
-          if (stats.isDirectory()) {
-            return Promise.resolve()
-          }
+  await walkdir
+    .async('.', { return_object: true })
+    .then((files) => {
+      debug('walking')
+      return Promise.all(
+        Object.entries(files).map<Promise<void>>(
+          ([path, stats]: [string, fs.Stats]) => {
+            debug(`found "${path}"`)
+            if (stats.isDirectory()) {
+              return Promise.resolve()
+            }
 
-          return readFile(path).then((data) => {
-            return Promise.all(
-              Array.from(data.toString().matchAll(referenceRegex)).map<
-                Promise<void>
-              >((match) => {
-                const [reference, owner, repo, type, id] = match
-                debug(`found reference "${reference}"`)
+            return readFile(path)
+              .then(
+                (data): Promise<void> => {
+                  debug(`read file: ${data}`)
+                  return Promise.all(
+                    Array.from(data.toString().matchAll(referenceRegex)).map<
+                      Promise<void>
+                    >((match) => {
+                      const [reference, owner, repo, type, id] = match
+                      debug(`found reference "${reference}"`)
 
-                return gitHubClient.issues
-                  .get({
-                    owner,
-                    repo,
-                    issue_number: parseInt(id)
-                  })
-                  .then((issue) => {
-                    if (issue.data.state == 'closed') {
                       return gitHubClient.issues
-                        .list({
-                          labels: issueLabel
+                        .get({
+                          owner,
+                          repo,
+                          issue_number: parseInt(id)
                         })
-                        .then((issues) => {
-                          if (
-                            !issues.data.find(
-                              (issue) => issue.title === issueTitle(reference)
-                            )
-                          ) {
-                            debug(
-                              `could not find issue "${issueTitle(
-                                reference
-                              )}", creating it`
-                            )
-                            return createIssue(reference)
-                              .then(() => Promise.resolve())
-                              .catch((res) => setFailed(JSON.stringify(res)))
+                        .then((issue) => {
+                          if (issue.data.state == 'closed') {
+                            return gitHubClient.issues
+                              .list({
+                                labels: issueLabel
+                              })
+                              .then((issues) => {
+                                if (
+                                  !issues.data.find(
+                                    (issue) =>
+                                      issue.title === issueTitle(reference)
+                                  )
+                                ) {
+                                  debug(
+                                    `could not find issue "${issueTitle(
+                                      reference
+                                    )}", creating it`
+                                  )
+                                  return createIssue(reference)
+                                    .then(() => Promise.resolve())
+                                    .catch(exitWithReason)
+                                }
+                              })
+                              .catch(exitWithReason)
                           }
                         })
-                    }
-                  })
-                  .catch((res) => setFailed(JSON.stringify(res)))
-              })
-            ).then(Promise.resolve)
-          })
-        }
-      )
-    )
-  })
+                        .catch(exitWithReason)
+                    })
+                  ).then(Promise.resolve)
+                }
+              )
+              .catch(exitWithReason)
+          }
+        )
+      ).catch(exitWithReason)
+    })
+    .catch(exitWithReason)
 })()

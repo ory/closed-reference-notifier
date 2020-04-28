@@ -4162,17 +4162,22 @@ const createIssue = (upstreamReference) => {
     });
 };
 const readFile = util_1.promisify(fs_1.default.readFile);
+const exitWithReason = (r) => core_1.setFailed(JSON.stringify(r));
 core_1.debug('will walk');
 console.log('log will walk');
 (async function () {
-    await walkdir_1.default.async('.', { return_object: true }).then((files) => {
+    await walkdir_1.default
+        .async('.', { return_object: true })
+        .then((files) => {
         core_1.debug('walking');
         return Promise.all(Object.entries(files).map(([path, stats]) => {
             core_1.debug(`found "${path}"`);
             if (stats.isDirectory()) {
                 return Promise.resolve();
             }
-            return readFile(path).then((data) => {
+            return readFile(path)
+                .then((data) => {
+                core_1.debug(`read file: ${data}`);
                 return Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map((match) => {
                     const [reference, owner, repo, type, id] = match;
                     core_1.debug(`found reference "${reference}"`);
@@ -4193,16 +4198,19 @@ console.log('log will walk');
                                     core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
                                     return createIssue(reference)
                                         .then(() => Promise.resolve())
-                                        .catch((res) => core_1.setFailed(JSON.stringify(res)));
+                                        .catch(exitWithReason);
                                 }
-                            });
+                            })
+                                .catch(exitWithReason);
                         }
                     })
-                        .catch((res) => core_1.setFailed(JSON.stringify(res)));
+                        .catch(exitWithReason);
                 })).then(Promise.resolve);
-            });
-        }));
-    });
+            })
+                .catch(exitWithReason);
+        })).catch(exitWithReason);
+    })
+        .catch(exitWithReason);
 })();
 
 
