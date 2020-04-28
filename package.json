@@ -7,8 +7,7 @@
     "build": "ncc build src/index.ts -o dist",
     "watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --single-quote --no-semi --trailing-comma none --write src",
-    "start": "tsc && node dist/index.js"
+    "format": "prettier --single-quote --no-semi --trailing-comma none --write src"
   },
   "repository": {
     "type": "git",

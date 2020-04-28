@@ -1,5 +1,5 @@
 import { GitHub } from '@actions/github'
-import { getInput, setFailed } from '@actions/core'
+import { getInput, setFailed, info } from '@actions/core'
 import fs from 'fs'
 import walkdir from 'walkdir'
 
@@ -32,6 +32,7 @@ walkdir.async('.', { return_object: true }).then((files) =>
 
         for (let match of data.toString().matchAll(referenceRegex)) {
           const [reference, owner, repo, type, id] = match
+          info(`found reference "${reference}"`)
           gitHubClient.issues
             .get({
               owner,
@@ -48,12 +49,13 @@ walkdir.async('.', { return_object: true }).then((files) =>
                     if (!issues.data.find(
                       (issue) => issue.title === issueTitle(reference)
                     )) {
-                      createIssue(reference).catch(setFailed)
+                      info(`could not find issue "${issueTitle(reference)}", creating it`)
+                      createIssue(reference).catch(res => setFailed(JSON.stringify(res)))
                     }
                   })
               }
             })
-            .catch(setFailed)
+            .catch(res => setFailed(JSON.stringify(res)))
         }
       })
   )
