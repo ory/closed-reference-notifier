@@ -1,12 +1,12 @@
 import { GitHub } from '@actions/github'
-import core from '@actions/core'
+import { getInput } from '@actions/core'
 import fs from 'fs'
 import walkdir from 'walkdir'
 
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm
 const issueLabel = 'closed reference'
 
-const gitHubClient = new GitHub(core.getInput('token'))
+const gitHubClient = new GitHub(getInput('token'))
 const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
 
 const issueTitle = (upstreamReference: string) =>

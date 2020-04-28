@@ -4144,12 +4144,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const github_1 = __webpack_require__(469);
-const core_1 = __importDefault(__webpack_require__(470));
+const core_1 = __webpack_require__(470);
 const fs_1 = __importDefault(__webpack_require__(747));
 const walkdir_1 = __importDefault(__webpack_require__(704));
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
 const issueLabel = 'closed reference';
-const gitHubClient = new github_1.GitHub(core_1.default.getInput('token'));
+const gitHubClient = new github_1.GitHub(core_1.getInput('token'));
 const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
 const issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
 // const createIssue = (upstreamReference: string) => {
