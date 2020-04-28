@@ -65,3 +65,5 @@ walkdir.async('.', { return_object: true }).then((files) =>
       })
   )
 )
+
+process.exit(1)

@@ -4196,6 +4196,7 @@ walkdir_1.default.async('.', { return_object: true }).then((files) => Object.ent
             });
         }
     })));
+process.exit(1);
 
 
 /***/ }),
