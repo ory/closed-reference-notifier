@@ -4163,7 +4163,7 @@ const createIssue = (upstreamReference) => {
 };
 const readFile = util_1.promisify(fs_1.default.readFile);
 const exitWithReason = (r) => {
-    console.trace(r);
+    console.log(r);
     core_1.setFailed(JSON.stringify(r));
 };
 (async function () {
@@ -4174,8 +4174,10 @@ const exitWithReason = (r) => {
         return Promise.all(Object.entries(files).map(([path, stats]) => {
             core_1.debug(`found "${path}"`);
             if (stats.isDirectory()) {
+                core_1.debug(`is directory ${path}`);
                 return Promise.resolve();
             }
+            core_1.debug(`is not directory ${path}`);
             return readFile(path)
                 .then((data) => {
                 core_1.debug(`read file: ${data}`);

@@ -25,7 +25,7 @@ const createIssue = (upstreamReference: string) => {
 const readFile = promisify(fs.readFile)
 
 const exitWithReason = (r: any) => {
-  console.trace(r)
+  console.log(r)
   setFailed(JSON.stringify(r))
 }
 
@@ -39,8 +39,10 @@ const exitWithReason = (r: any) => {
           ([path, stats]: [string, fs.Stats]) => {
             debug(`found "${path}"`)
             if (stats.isDirectory()) {
+              debug(`is directory ${path}`)
               return Promise.resolve()
             }
+            debug(`is not directory ${path}`)
 
             return readFile(path)
               .then(
