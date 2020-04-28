@@ -4167,7 +4167,7 @@ walkdir_1.default.async('.', { return_object: true }).then((files) => Object.ent
         }
         for (let match of data.toString().matchAll(referenceRegex)) {
             const [reference, owner, repo, type, id] = match;
-            core_1.info(`found reference "${reference}"`);
+            core_1.debug(`found reference "${reference}"`);
             gitHubClient.issues
                 .get({
                 owner,
@@ -4182,7 +4182,7 @@ walkdir_1.default.async('.', { return_object: true }).then((files) => Object.ent
                     })
                         .then((issues) => {
                         if (!issues.data.find((issue) => issue.title === issueTitle(reference))) {
-                            core_1.info(`could not find issue "${issueTitle(reference)}", creating it`);
+                            core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
                             createIssue(reference).catch(res => core_1.setFailed(JSON.stringify(res)));
                         }
                     });
