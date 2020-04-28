@@ -21,44 +21,55 @@ const createIssue = (upstreamReference: string) => {
   })
 }
 
-walkdir.async('.', { return_object: true }).then((files) =>
-  Object.entries(files).forEach(
-    ([path, stats]: [string, fs.Stats]) =>
-      stats.isDirectory() ||
-      fs.readFile(path, (err, data) => {
-        if (err) {
-          setFailed(JSON.stringify(err))
-        }
+debug('will walk')
+console.log('log will walk')
+;(async function () {
+  walkdir.async('.', { return_object: true }).then((files) => {
+    debug('walking')
+    Object.entries(files).forEach(
+      ([path, stats]: [string, fs.Stats]) =>
+        stats.isDirectory() ||
+        fs.readFile(path, (err, data) => {
+          if (err) {
+            setFailed(JSON.stringify(err))
+          }
 
-        for (let match of data.toString().matchAll(referenceRegex)) {
-          const [reference, owner, repo, type, id] = match
-          debug(`found reference "${reference}"`)
-          gitHubClient.issues
-            .get({
-              owner,
-              repo,
-              issue_number: parseInt(id)
-            })
-            .then((issue) => {
-              if (issue.data.state == 'closed') {
-                gitHubClient.issues
-                  .list({
-                    labels: issueLabel
-                  })
-                  .then((issues) => {
-                    if (!issues.data.find(
-                      (issue) => issue.title === issueTitle(reference)
-                    )) {
-                      debug(`could not find issue "${issueTitle(reference)}", creating it`)
-                      createIssue(reference).catch(res => setFailed(JSON.stringify(res)))
-                    }
-                  })
-              }
-            })
-            .catch(res => setFailed(JSON.stringify(res)))
-        }
-      })
-  )
-)
-
-process.exit(1)
+          for (let match of data.toString().matchAll(referenceRegex)) {
+            const [reference, owner, repo, type, id] = match
+            debug(`found reference "${reference}"`)
+            gitHubClient.issues
+              .get({
+                owner,
+                repo,
+                issue_number: parseInt(id)
+              })
+              .then((issue) => {
+                if (issue.data.state == 'closed') {
+                  gitHubClient.issues
+                    .list({
+                      labels: issueLabel
+                    })
+                    .then((issues) => {
+                      if (
+                        !issues.data.find(
+                          (issue) => issue.title === issueTitle(reference)
+                        )
+                      ) {
+                        debug(
+                          `could not find issue "${issueTitle(
+                            reference
+                          )}", creating it`
+                        )
+                        createIssue(reference).catch((res) =>
+                          setFailed(JSON.stringify(res))
+                        )
+                      }
+                    })
+                }
+              })
+              .catch((res) => setFailed(JSON.stringify(res)))
+          }
+        })
+    )
+  })
+})()

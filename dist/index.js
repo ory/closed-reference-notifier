@@ -4160,38 +4160,44 @@ const createIssue = (upstreamReference) => {
         labels: [issueLabel]
     });
 };
-walkdir_1.default.async('.', { return_object: true }).then((files) => Object.entries(files).forEach(([path, stats]) => stats.isDirectory() ||
-    fs_1.default.readFile(path, (err, data) => {
-        if (err) {
-            core_1.setFailed(JSON.stringify(err));
-        }
-        for (let match of data.toString().matchAll(referenceRegex)) {
-            const [reference, owner, repo, type, id] = match;
-            core_1.debug(`found reference "${reference}"`);
-            gitHubClient.issues
-                .get({
-                owner,
-                repo,
-                issue_number: parseInt(id)
-            })
-                .then((issue) => {
-                if (issue.data.state == 'closed') {
-                    gitHubClient.issues
-                        .list({
-                        labels: issueLabel
-                    })
-                        .then((issues) => {
-                        if (!issues.data.find((issue) => issue.title === issueTitle(reference))) {
-                            core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
-                            createIssue(reference).catch(res => core_1.setFailed(JSON.stringify(res)));
-                        }
-                    });
+core_1.debug('will walk');
+console.log('log will walk');
+(async function () {
+    walkdir_1.default.async('.', { return_object: true }).then((files) => {
+        core_1.debug('walking');
+        Object.entries(files).forEach(([path, stats]) => stats.isDirectory() ||
+            fs_1.default.readFile(path, (err, data) => {
+                if (err) {
+                    core_1.setFailed(JSON.stringify(err));
                 }
-            })
-                .catch(res => core_1.setFailed(JSON.stringify(res)));
-        }
-    })));
-process.exit(1);
+                for (let match of data.toString().matchAll(referenceRegex)) {
+                    const [reference, owner, repo, type, id] = match;
+                    core_1.debug(`found reference "${reference}"`);
+                    gitHubClient.issues
+                        .get({
+                        owner,
+                        repo,
+                        issue_number: parseInt(id)
+                    })
+                        .then((issue) => {
+                        if (issue.data.state == 'closed') {
+                            gitHubClient.issues
+                                .list({
+                                labels: issueLabel
+                            })
+                                .then((issues) => {
+                                if (!issues.data.find((issue) => issue.title === issueTitle(reference))) {
+                                    core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
+                                    createIssue(reference).catch((res) => core_1.setFailed(JSON.stringify(res)));
+                                }
+                            });
+                        }
+                    })
+                        .catch((res) => core_1.setFailed(JSON.stringify(res)));
+                }
+            }));
+    });
+})();
 
 
 /***/ }),
