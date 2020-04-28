@@ -4152,22 +4152,18 @@ const issueLabel = 'closed reference';
 const gitHubClient = new github_1.GitHub(core_1.getInput('token'));
 const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
 const issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
-// const createIssue = (upstreamReference: string) => {
-//
-//
-//   return gitHubClient.issues.create({
-//     owner,
-//     repo,
-//     title: issueTitle(upstreamReference),
-//     labels: [issueLabel]
-//   })
-// }
+const createIssue = (upstreamReference) => {
+    return gitHubClient.issues.create({
+        owner: thisOwner,
+        repo: thisRepo,
+        title: issueTitle(upstreamReference),
+        labels: [issueLabel]
+    });
+};
 walkdir_1.default.async('.', { return_object: true }).then((files) => Object.entries(files).forEach(([path, stats]) => stats.isDirectory() ||
     fs_1.default.readFile(path, (err, data) => {
         if (err) {
-            console.log(err);
-            process.exit(1);
-            return;
+            core_1.setFailed(JSON.stringify(err));
         }
         for (let match of data.toString().matchAll(referenceRegex)) {
             const [reference, owner, repo, type, id] = match;
@@ -4179,21 +4175,18 @@ walkdir_1.default.async('.', { return_object: true }).then((files) => Object.ent
             })
                 .then((issue) => {
                 if (issue.data.state == 'closed') {
-                    console.log('found closed reference:', reference);
                     gitHubClient.issues
                         .list({
                         labels: issueLabel
                     })
                         .then((issues) => {
-                        issues.data.find((issue) => issue.title === issueTitle(reference)) ||
-                            console.log('closed reference without issue:', reference);
+                        if (!issues.data.find((issue) => issue.title === issueTitle(reference))) {
+                            createIssue(reference).catch(core_1.setFailed);
+                        }
                     });
                 }
             })
-                .catch((err) => {
-                console.log(err);
-                process.exit(1);
-            });
+                .catch(core_1.setFailed);
         }
     })));
 process.exit(1);

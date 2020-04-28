@@ -1,5 +1,5 @@
 import { GitHub } from '@actions/github'
-import { getInput } from '@actions/core'
+import { getInput, setFailed } from '@actions/core'
 import fs from 'fs'
 import walkdir from 'walkdir'
 
@@ -12,16 +12,14 @@ const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
 const issueTitle = (upstreamReference: string) =>
   `upstream reference closed: ${upstreamReference}`
 
-// const createIssue = (upstreamReference: string) => {
-//
-//
-//   return gitHubClient.issues.create({
-//     owner,
-//     repo,
-//     title: issueTitle(upstreamReference),
-//     labels: [issueLabel]
-//   })
-// }
+const createIssue = (upstreamReference: string) => {
+  return gitHubClient.issues.create({
+    owner: thisOwner,
+    repo: thisRepo,
+    title: issueTitle(upstreamReference),
+    labels: [issueLabel]
+  })
+}
 
 walkdir.async('.', { return_object: true }).then((files) =>
   Object.entries(files).forEach(
@@ -29,9 +27,7 @@ walkdir.async('.', { return_object: true }).then((files) =>
       stats.isDirectory() ||
       fs.readFile(path, (err, data) => {
         if (err) {
-          console.log(err)
-          process.exit(1)
-          return
+          setFailed(JSON.stringify(err))
         }
 
         for (let match of data.toString().matchAll(referenceRegex)) {
@@ -44,23 +40,20 @@ walkdir.async('.', { return_object: true }).then((files) =>
             })
             .then((issue) => {
               if (issue.data.state == 'closed') {
-                console.log('found closed reference:', reference)
                 gitHubClient.issues
                   .list({
                     labels: issueLabel
                   })
                   .then((issues) => {
-                    issues.data.find(
+                    if (!issues.data.find(
                       (issue) => issue.title === issueTitle(reference)
-                    ) ||
-                      console.log('closed reference without issue:', reference)
+                    )) {
+                      createIssue(reference).catch(setFailed)
+                    }
                   })
               }
             })
-            .catch((err) => {
-              console.log(err)
-              process.exit(1)
-            })
+            .catch(setFailed)
         }
       })
   )
