@@ -63,7 +63,7 @@ const mainRunner = ({
                             if (issue.data.state == 'closed') {
                               issueExists(client, reference)
                                 .then((exists: boolean) =>
-                                  exists
+                                  !exists
                                     ? createIssue(client, {
                                         owner: thisOwner,
                                         repo: thisRepo,
