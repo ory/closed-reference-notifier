@@ -4149,91 +4149,69 @@ const fs_1 = __importDefault(__webpack_require__(747));
 const walkdir_1 = __importDefault(__webpack_require__(704));
 const util_1 = __webpack_require__(669);
 const path_1 = __importDefault(__webpack_require__(622));
-// constants
+const helpers_1 = __importDefault(__webpack_require__(872));
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
-// computed constants
-const gitHubClient = new github_1.GitHub(core_1.getInput('token'));
-const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
-const readFile = util_1.promisify(fs_1.default.readFile);
-const ignorePaths = core_1.getInput('ignore')
-    .split(',')
-    .map((path) => path_1.default.resolve(path_1.default.join('.', path)));
-const issueLabels = core_1.getInput('issueLabels').split(',');
-// helper functions
-const issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
-const createIssue = (upstreamReference) => {
-    return gitHubClient.issues.create({
-        owner: thisOwner,
-        repo: thisRepo,
-        title: issueTitle(upstreamReference),
-        labels: issueLabels
-    });
-};
-const shouldIgnore = (absPath) => ignorePaths.reduce((ignore, ignorePath) => ignore || absPath.startsWith(ignorePath), false);
-const exitWithReason = (r) => {
-    console.log(r);
-    core_1.setFailed(JSON.stringify(r));
-};
-(async function () {
-    await walkdir_1.default
-        .async('.', { return_object: true })
-        .then((files) => {
-        return Promise.all(Object.entries(files).map(([path, stats]) => {
-            if (stats.isDirectory()) {
-                core_1.debug(`is directory ${path}`);
-                return Promise.resolve();
-            }
-            if (shouldIgnore(path)) {
-                core_1.debug(`ignoring ${path}`);
-                return Promise.resolve();
-            }
-            core_1.debug(`analyzing ${path}`);
-            return readFile(path)
-                .then((data) => {
-                core_1.debug(`read file: ${data}`);
-                return Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map((match) => {
-                    const [reference, owner, repo, type, id] = match;
-                    core_1.debug(`found reference "${reference}"`);
-                    return gitHubClient.issues
-                        .get({
-                        owner,
-                        repo,
-                        issue_number: parseInt(id)
-                    })
-                        .then((issue) => {
-                        core_1.debug(`got issue for reference "${reference}": ${JSON.stringify(issue, null, 2)}`);
-                        if (issue.data.state == 'closed') {
-                            gitHubClient
-                                .graphql(`{
-  search(query: "repo:${process.env.GITHUB_REPOSITORY} in:title ${reference}", type: ISSUE, first: 1) {
-    nodes {
-      ... on Issue {
-        number
-      }
-    }
-  }
-}`)
-                                .then((data) => {
-                                console.log('got data from graphql', JSON.stringify(data));
-                                if (data.search.nodes.length === 0) {
-                                    core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
-                                    return createIssue(reference)
+const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, client, labels, owner: thisOwner, repo: thisRepo, readFile, ignorePaths }) => {
+    ;
+    (async function () {
+        await walkdir_1.default
+            .async('.', { return_object: true })
+            .then((files) => {
+            return Promise.all(Object.entries(files).map(([path, stats]) => {
+                if (stats.isDirectory()) {
+                    return Promise.resolve();
+                }
+                if (shouldIgnore(ignorePaths, path)) {
+                    return Promise.resolve();
+                }
+                return readFile(path)
+                    .then((data) => {
+                    return Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map((match) => {
+                        const [reference, owner, repo, type, id] = match;
+                        return client.issues
+                            .get({
+                            owner,
+                            repo,
+                            issue_number: parseInt(id)
+                        })
+                            .then((issue) => {
+                            if (issue.data.state == 'closed') {
+                                issueExists(client, reference)
+                                    .then((exists) => exists
+                                    ? createIssue(client, {
+                                        owner: thisOwner,
+                                        repo: thisRepo,
+                                        labels,
+                                        title: issueTitle(reference)
+                                    })
                                         .then(() => Promise.resolve())
-                                        .catch(exitWithReason);
-                                }
-                                return Promise.resolve();
-                            })
-                                .catch(exitWithReason);
-                        }
-                    })
-                        .catch(exitWithReason);
-                })).then(() => Promise.resolve());
-            })
-                .catch(exitWithReason);
-        })).catch(exitWithReason);
-    })
-        .catch(exitWithReason);
-})();
+                                        .catch(exitWithReason)
+                                    : Promise.resolve())
+                                    .catch(exitWithReason);
+                            }
+                        })
+                            .catch(exitWithReason);
+                    })).then(() => Promise.resolve());
+                })
+                    .catch(exitWithReason);
+            })).catch(exitWithReason);
+        })
+            .catch(exitWithReason);
+    })();
+};
+const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/', 2);
+mainRunner({
+    ...helpers_1.default,
+    client: new github_1.GitHub(core_1.getInput('token')),
+    readFile: util_1.promisify(fs_1.default.readFile),
+    owner,
+    repo,
+    labels: core_1.getInput('issueLabels').split(','),
+    ignorePaths: core_1.getInput('ignore')
+        .split(',')
+        .map((path) => path_1.default.resolve(path_1.default.join('.', path)))
+});
+exports.default = mainRunner;
 
 
 /***/ }),
@@ -23787,6 +23765,45 @@ module.exports = function (str) {
 		arg :
 		bin + (arg ? ' ' + arg : '')
 	);
+};
+
+
+/***/ }),
+
+/***/ 872:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const core_1 = __webpack_require__(470);
+exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
+exports.createIssue = (client, params) => {
+    return client.issues.create(params);
+};
+exports.shouldIgnore = (ignorePaths, absPath) => ignorePaths.reduce((ignore, ignorePath) => ignore || absPath.startsWith(ignorePath), false);
+exports.exitWithReason = (r) => {
+    console.log(r);
+    core_1.setFailed(JSON.stringify(r));
+};
+exports.issueExists = (client, reference) => client
+    .graphql(`
+{
+  search(query: "repo:${process.env.GITHUB_REPOSITORY} in:title ${reference}", type: ISSUE, first: 1) {
+    nodes {
+      ... on Issue {
+        number
+      }
+    }
+  }
+}`)
+    .then(({ search: { nodes } }) => Promise.resolve(nodes.length !== 0));
+exports.default = {
+    issueExists: exports.issueExists,
+    exitWithReason: exports.exitWithReason,
+    shouldIgnore: exports.shouldIgnore,
+    createIssue: exports.createIssue,
+    issueTitle: exports.issueTitle
 };
 
 
