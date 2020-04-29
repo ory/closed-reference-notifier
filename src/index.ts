@@ -98,16 +98,14 @@ const exitWithReason = (r: any) => {
 }`
                               )
                               .then(
-                                ({
-                                  data: {
-                                    search: { nodes }
-                                  }
-                                }: {
-                                  data: {
-                                    search: { nodes: Array<{ number: number }> }
-                                  }
+                                (data: {
+                                  search: { nodes: Array<{ number: number }> }
                                 }) => {
-                                  if (nodes.length === 0) {
+                                  console.log(
+                                    'got data from graphql',
+                                    JSON.stringify(data)
+                                  )
+                                  if (data.search.nodes.length === 0) {
                                     debug(
                                       `could not find issue "${issueTitle(
                                         reference

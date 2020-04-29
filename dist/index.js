@@ -4213,8 +4213,9 @@ const exitWithReason = (r) => {
     }
   }
 }`)
-                                .then(({ data: { search: { nodes } } }) => {
-                                if (nodes.length === 0) {
+                                .then((data) => {
+                                console.log('got data from graphql', JSON.stringify(data));
+                                if (data.search.nodes.length === 0) {
                                     core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
                                     return createIssue(reference)
                                         .then(() => Promise.resolve())
