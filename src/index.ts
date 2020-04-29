@@ -92,6 +92,9 @@ const exitWithReason = (r: any) => {
     nodes {
       ... on Issue {
         number
+      }
+    }
+  }
 }`
                               )
                               .then(

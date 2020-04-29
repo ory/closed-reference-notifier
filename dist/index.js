@@ -4209,6 +4209,9 @@ const exitWithReason = (r) => {
     nodes {
       ... on Issue {
         number
+      }
+    }
+  }
 }`)
                                 .then(({ data: { search: { nodes } } }) => {
                                 if (nodes.length === 0) {
