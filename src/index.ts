@@ -7,7 +7,6 @@ import nodePath from 'path'
 
 // constants
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm
-const issueLabel = 'closed reference'
 
 // computed constants
 const gitHubClient = new GitHub(getInput('token'))
@@ -16,6 +15,7 @@ const readFile = promisify(fs.readFile)
 const ignorePaths = getInput('ignore')
   .split(',')
   .map((path) => nodePath.resolve(nodePath.join('.', path)))
+const issueLabels = getInput('issueLabels').split(',')
 
 // helper functions
 const issueTitle = (upstreamReference: string) =>
@@ -26,7 +26,7 @@ const createIssue = (upstreamReference: string) => {
     owner: thisOwner,
     repo: thisRepo,
     title: issueTitle(upstreamReference),
-    labels: [issueLabel]
+    labels: issueLabels
   })
 }
 
@@ -85,27 +85,38 @@ const exitWithReason = (r: any) => {
                             )}`
                           )
                           if (issue.data.state == 'closed') {
-                            return gitHubClient.issues
-                              .list({
-                                labels: issueLabel
-                              })
-                              .then((issues) => {
-                                if (
-                                  !issues.data.find(
-                                    (issue) =>
-                                      issue.title === issueTitle(reference)
-                                  )
-                                ) {
-                                  debug(
-                                    `could not find issue "${issueTitle(
-                                      reference
-                                    )}", creating it`
-                                  )
-                                  return createIssue(reference)
-                                    .then(() => Promise.resolve())
-                                    .catch(exitWithReason)
+                            gitHubClient
+                              .graphql(
+                                `{
+  search(query: "repo:${process.env.GITHUB_REPOSITORY} in:title ${reference}", type: ISSUE, first: 1) {
+    nodes {
+      ... on Issue {
+        number
+}`
+                              )
+                              .then(
+                                ({
+                                  data: {
+                                    search: { nodes }
+                                  }
+                                }: {
+                                  data: {
+                                    search: { nodes: Array<{ number: number }> }
+                                  }
+                                }) => {
+                                  if (nodes.length === 0) {
+                                    debug(
+                                      `could not find issue "${issueTitle(
+                                        reference
+                                      )}", creating it`
+                                    )
+                                    return createIssue(reference)
+                                      .then(() => Promise.resolve())
+                                      .catch(exitWithReason)
+                                  }
+                                  return Promise.resolve()
                                 }
-                              })
+                              )
                               .catch(exitWithReason)
                           }
                         })

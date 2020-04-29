@@ -8,6 +8,10 @@ inputs:
     description: ignore directories, comma seperated list
     required: false
     default: .git
+  issueLabels:
+    description: the labels to create issues with, comma seperated list
+    required: false
+    default: closed reference
 runs:
   using: node12
   main: dist/index.js

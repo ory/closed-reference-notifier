@@ -4151,7 +4151,6 @@ const util_1 = __webpack_require__(669);
 const path_1 = __importDefault(__webpack_require__(622));
 // constants
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
-const issueLabel = 'closed reference';
 // computed constants
 const gitHubClient = new github_1.GitHub(core_1.getInput('token'));
 const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
@@ -4159,6 +4158,7 @@ const readFile = util_1.promisify(fs_1.default.readFile);
 const ignorePaths = core_1.getInput('ignore')
     .split(',')
     .map((path) => path_1.default.resolve(path_1.default.join('.', path)));
+const issueLabels = core_1.getInput('issueLabels').split(',');
 // helper functions
 const issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
 const createIssue = (upstreamReference) => {
@@ -4166,7 +4166,7 @@ const createIssue = (upstreamReference) => {
         owner: thisOwner,
         repo: thisRepo,
         title: issueTitle(upstreamReference),
-        labels: [issueLabel]
+        labels: issueLabels
     });
 };
 const shouldIgnore = (absPath) => ignorePaths.reduce((ignore, ignorePath) => ignore || absPath.startsWith(ignorePath), false);
@@ -4203,17 +4203,21 @@ const exitWithReason = (r) => {
                         .then((issue) => {
                         core_1.debug(`got issue for reference "${reference}": ${JSON.stringify(issue, null, 2)}`);
                         if (issue.data.state == 'closed') {
-                            return gitHubClient.issues
-                                .list({
-                                labels: issueLabel
-                            })
-                                .then((issues) => {
-                                if (!issues.data.find((issue) => issue.title === issueTitle(reference))) {
+                            gitHubClient
+                                .graphql(`{
+  search(query: "repo:${process.env.GITHUB_REPOSITORY} in:title ${reference}", type: ISSUE, first: 1) {
+    nodes {
+      ... on Issue {
+        number
+}`)
+                                .then(({ data: { search: { nodes } } }) => {
+                                if (nodes.length === 0) {
                                     core_1.debug(`could not find issue "${issueTitle(reference)}", creating it`);
                                     return createIssue(reference)
                                         .then(() => Promise.resolve())
                                         .catch(exitWithReason);
                                 }
+                                return Promise.resolve();
                             })
                                 .catch(exitWithReason);
                         }
