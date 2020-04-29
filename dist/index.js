@@ -4148,10 +4148,18 @@ const core_1 = __webpack_require__(470);
 const fs_1 = __importDefault(__webpack_require__(747));
 const walkdir_1 = __importDefault(__webpack_require__(704));
 const util_1 = __webpack_require__(669);
+const path_1 = __importDefault(__webpack_require__(622));
+// constants
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
 const issueLabel = 'closed reference';
+// computed constants
 const gitHubClient = new github_1.GitHub(core_1.getInput('token'));
 const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
+const readFile = util_1.promisify(fs_1.default.readFile);
+const ignorePaths = core_1.getInput('ignore')
+    .split(',')
+    .map((path) => path_1.default.resolve(path_1.default.join('.', path)));
+// helper functions
 const issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
 const createIssue = (upstreamReference) => {
     return gitHubClient.issues.create({
@@ -4161,7 +4169,7 @@ const createIssue = (upstreamReference) => {
         labels: [issueLabel]
     });
 };
-const readFile = util_1.promisify(fs_1.default.readFile);
+const shouldIgnore = (absPath) => ignorePaths.reduce((ignore, ignorePath) => ignore || absPath.startsWith(ignorePath), false);
 const exitWithReason = (r) => {
     console.log(r);
     core_1.setFailed(JSON.stringify(r));
@@ -4170,14 +4178,16 @@ const exitWithReason = (r) => {
     await walkdir_1.default
         .async('.', { return_object: true })
         .then((files) => {
-        core_1.debug('walking');
         return Promise.all(Object.entries(files).map(([path, stats]) => {
-            core_1.debug(`found "${path}"`);
             if (stats.isDirectory()) {
                 core_1.debug(`is directory ${path}`);
                 return Promise.resolve();
             }
-            core_1.debug(`is not directory ${path}`);
+            if (shouldIgnore(path)) {
+                core_1.debug(`ignoring ${path}`);
+                return Promise.resolve();
+            }
+            core_1.debug(`analyzing ${path}`);
             return readFile(path)
                 .then((data) => {
                 core_1.debug(`read file: ${data}`);
@@ -4191,6 +4201,7 @@ const exitWithReason = (r) => {
                         issue_number: parseInt(id)
                     })
                         .then((issue) => {
+                        core_1.debug(`got issue for reference "${reference}": ${JSON.stringify(issue, null, 2)}`);
                         if (issue.data.state == 'closed') {
                             return gitHubClient.issues
                                 .list({
@@ -4208,7 +4219,7 @@ const exitWithReason = (r) => {
                         }
                     })
                         .catch(exitWithReason);
-                })).then(Promise.resolve);
+                })).then(() => Promise.resolve());
             })
                 .catch(exitWithReason);
         })).catch(exitWithReason);
