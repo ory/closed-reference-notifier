@@ -1,20 +1,27 @@
-import { setFailed } from '@actions/core'
+import { getInput, setFailed } from '@actions/core'
 import { GitHub } from '@actions/github'
 import { Octokit } from '@octokit/rest'
+import path from 'path'
+
+let client: GitHub
+const getClient = () => client || (client = new GitHub(getInput('token')))
 
 export const issueTitle = (upstreamReference: string) =>
   `upstream reference closed: ${upstreamReference}`
 
 export const createIssue = (
-  client: GitHub,
   params: Octokit.IssuesCreateParamsDeprecatedAssignee
-) => {
-  return client.issues.create(params)
-}
+) =>
+  getClient()
+    .issues.create(params)
+    .then(() => Promise.resolve())
 
 export const shouldIgnore = (ignorePaths: Array<string>, absPath: string) =>
   ignorePaths.reduce(
-    (ignore: boolean, ignorePath) => ignore || absPath.startsWith(ignorePath),
+    (ignore: boolean, ignorePath) =>
+      ignore ||
+      absPath === ignorePath ||
+      !path.relative(ignorePath, absPath).startsWith('..'),
     false
   )
 
@@ -23,8 +30,8 @@ export const exitWithReason = (r: any) => {
   setFailed(JSON.stringify(r))
 }
 
-export const issueExists = (client: GitHub, reference: string) =>
-  client
+export const issueExists = (reference: string) =>
+  getClient()
     .graphql(
       `
 {
@@ -45,10 +52,28 @@ export const issueExists = (client: GitHub, reference: string) =>
       }) => Promise.resolve(nodes.length !== 0)
     )
 
+export const issueIsClosed = ({
+  owner,
+  repo,
+  issueNumber
+}: {
+  owner: string
+  repo: string
+  issueNumber: string
+}) =>
+  getClient()
+    .issues.get({
+      owner,
+      repo,
+      issue_number: parseInt(issueNumber)
+    })
+    .then((issue) => Promise.resolve(issue.data.state == 'closed'))
+
 export default {
   issueExists,
   exitWithReason,
   shouldIgnore,
   createIssue,
-  issueTitle
+  issueTitle,
+  issueIsClosed
 }

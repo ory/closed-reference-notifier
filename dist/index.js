@@ -486,6 +486,41 @@ module.exports = windowsRelease;
 
 /***/ }),
 
+/***/ 66:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const walkdir_1 = __importDefault(__webpack_require__(704));
+const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
+const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, labels, thisOwner, thisRepo, readFile, ignorePaths, issueIsClosed, path }) => walkdir_1.default
+    .async(path, { return_object: true })
+    .then((files) => Promise.all(Object.entries(files).map(([path, stats]) => stats.isDirectory() || shouldIgnore(ignorePaths, path)
+    ? Promise.resolve()
+    : readFile(path).then((data) => Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map(([reference, owner, repo, type, issueNumber]) => issueIsClosed({
+        owner,
+        repo,
+        issueNumber
+    }).then((isClosed) => !isClosed
+        ? Promise.resolve()
+        : issueExists(reference).then((exists) => !exists
+            ? createIssue({
+                owner: thisOwner,
+                repo: thisRepo,
+                labels,
+                title: issueTitle(reference)
+            })
+            : Promise.resolve()))))))))
+    .catch(exitWithReason);
+exports.default = mainRunner;
+
+
+/***/ }),
+
 /***/ 87:
 /***/ (function(module) {
 
@@ -4143,75 +4178,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const github_1 = __webpack_require__(469);
 const core_1 = __webpack_require__(470);
 const fs_1 = __importDefault(__webpack_require__(747));
-const walkdir_1 = __importDefault(__webpack_require__(704));
-const util_1 = __webpack_require__(669);
 const path_1 = __importDefault(__webpack_require__(622));
 const helpers_1 = __importDefault(__webpack_require__(872));
-const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
-const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, client, labels, owner: thisOwner, repo: thisRepo, readFile, ignorePaths }) => {
-    ;
-    (async function () {
-        await walkdir_1.default
-            .async('.', { return_object: true })
-            .then((files) => {
-            return Promise.all(Object.entries(files).map(([path, stats]) => {
-                if (stats.isDirectory()) {
-                    return Promise.resolve();
-                }
-                if (shouldIgnore(ignorePaths, path)) {
-                    return Promise.resolve();
-                }
-                return readFile(path)
-                    .then((data) => {
-                    return Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map((match) => {
-                        const [reference, owner, repo, type, id] = match;
-                        return client.issues
-                            .get({
-                            owner,
-                            repo,
-                            issue_number: parseInt(id)
-                        })
-                            .then((issue) => {
-                            if (issue.data.state == 'closed') {
-                                issueExists(client, reference)
-                                    .then((exists) => exists
-                                    ? createIssue(client, {
-                                        owner: thisOwner,
-                                        repo: thisRepo,
-                                        labels,
-                                        title: issueTitle(reference)
-                                    })
-                                        .then(() => Promise.resolve())
-                                        .catch(exitWithReason)
-                                    : Promise.resolve())
-                                    .catch(exitWithReason);
-                            }
-                        })
-                            .catch(exitWithReason);
-                    })).then(() => Promise.resolve());
-                })
-                    .catch(exitWithReason);
-            })).catch(exitWithReason);
-        })
-            .catch(exitWithReason);
-    })();
-};
-const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/', 2);
-mainRunner({
-    ...helpers_1.default,
-    client: new github_1.GitHub(core_1.getInput('token')),
-    readFile: util_1.promisify(fs_1.default.readFile),
-    owner,
-    repo,
-    labels: core_1.getInput('issueLabels').split(','),
-    ignorePaths: core_1.getInput('ignore')
-        .split(',')
-        .map((path) => path_1.default.resolve(path_1.default.join('.', path)))
-});
-exports.default = mainRunner;
+const mainRunner_1 = __importDefault(__webpack_require__(66));
+const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
+(async () => {
+    await mainRunner_1.default({
+        ...helpers_1.default,
+        readFile: fs_1.default.promises.readFile,
+        thisOwner,
+        thisRepo,
+        labels: core_1.getInput('issueLabels').split(','),
+        ignorePaths: core_1.getInput('ignore')
+            .split(',')
+            .map((path) => path_1.default.resolve(path_1.default.join('.', path))),
+        path: '.'
+    });
+})();
 
 
 /***/ }),
@@ -23775,18 +23760,27 @@ module.exports = function (str) {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = __webpack_require__(470);
+const github_1 = __webpack_require__(469);
+const path_1 = __importDefault(__webpack_require__(622));
+let client;
+const getClient = () => client || (client = new github_1.GitHub(core_1.getInput('token')));
 exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
-exports.createIssue = (client, params) => {
-    return client.issues.create(params);
-};
-exports.shouldIgnore = (ignorePaths, absPath) => ignorePaths.reduce((ignore, ignorePath) => ignore || absPath.startsWith(ignorePath), false);
+exports.createIssue = (params) => getClient()
+    .issues.create(params)
+    .then(() => Promise.resolve());
+exports.shouldIgnore = (ignorePaths, absPath) => ignorePaths.reduce((ignore, ignorePath) => ignore ||
+    absPath === ignorePath ||
+    !path_1.default.relative(ignorePath, absPath).startsWith('..'), false);
 exports.exitWithReason = (r) => {
     console.log(r);
     core_1.setFailed(JSON.stringify(r));
 };
-exports.issueExists = (client, reference) => client
+exports.issueExists = (reference) => getClient()
     .graphql(`
 {
   search(query: "repo:${process.env.GITHUB_REPOSITORY} in:title ${reference}", type: ISSUE, first: 1) {
@@ -23798,12 +23792,20 @@ exports.issueExists = (client, reference) => client
   }
 }`)
     .then(({ search: { nodes } }) => Promise.resolve(nodes.length !== 0));
+exports.issueIsClosed = ({ owner, repo, issueNumber }) => getClient()
+    .issues.get({
+    owner,
+    repo,
+    issue_number: parseInt(issueNumber)
+})
+    .then((issue) => Promise.resolve(issue.data.state == 'closed'));
 exports.default = {
     issueExists: exports.issueExists,
     exitWithReason: exports.exitWithReason,
     shouldIgnore: exports.shouldIgnore,
     createIssue: exports.createIssue,
-    issueTitle: exports.issueTitle
+    issueTitle: exports.issueTitle,
+    issueIsClosed: exports.issueIsClosed
 };
 
 

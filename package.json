@@ -6,7 +6,8 @@
   "scripts": {
     "build": "ncc build src/index.ts -o dist",
     "watch": "tsc -w",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "format": "prettier --single-quote --no-semi --trailing-comma none --write src"
   },
   "repository": {
@@ -20,9 +21,12 @@
   },
   "homepage": "https://github.com/ory/closed-reference-notifier#readme",
   "devDependencies": {
-    "typescript": "^3.8.3",
+    "@types/jest": "^25.2.1",
+    "@zeit/ncc": "^0.22.1",
+    "jest": "^25.5.2",
     "prettier": "^2.0.5",
-    "@zeit/ncc": "^0.22.1"
+    "ts-jest": "^25.4.0",
+    "typescript": "^3.8.3"
   },
   "dependencies": {
     "@actions/core": "^1.2.3",
