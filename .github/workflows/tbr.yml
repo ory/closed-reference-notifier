@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: npm ci
+      - run: npm i
       - name: Check format
         run: npm run format:check
       - name: Run build
