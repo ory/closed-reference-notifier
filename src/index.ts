@@ -16,6 +16,6 @@ const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
     ignorePaths: getInput('ignore')
       .split(',')
       .map((path) => nodePath.resolve(nodePath.join('.', path))),
-    path: '.'
+    directory: '.'
   })
 })()

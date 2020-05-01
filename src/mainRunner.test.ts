@@ -1,5 +1,5 @@
 import mainRunner from './mainRunner'
-import { issueTitle, shouldIgnore } from './helpers'
+import { issueBody, issueTitle, shouldIgnore } from './helpers'
 import fs from 'fs'
 import path from 'path'
 
@@ -22,6 +22,7 @@ const mockDependencies = ({
     Promise.resolve(issueExists)
   ),
   issueTitle: jest.fn(issueTitle),
+  issueBody: jest.fn(issueBody),
   shouldIgnore: jest.fn(shouldIgnore),
   exitWithReason: jest.fn<void, any>(),
   issueIsClosed: jest.fn<
@@ -39,7 +40,7 @@ const mockDependencies = ({
   thisOwner: 'thisOwner',
   thisRepo: 'thisRepo',
   readFile: jest.fn(fs.promises.readFile),
-  path
+  directory: path
 })
 
 const createFiles = (dirPath: string, files: { [path: string]: string }) =>
@@ -69,9 +70,10 @@ const expectCreated = (
   })
 
   const createdIssuesWith = deps.createIssue.mock.calls.map(
-    ([{ title, owner, repo }]) => {
+    ([{ title, owner, repo, body }]) => {
       expect(owner).toBe(deps.thisOwner)
       expect(repo).toBe(deps.thisRepo)
+      expect(body).toBeDefined()
       return title
     }
   )

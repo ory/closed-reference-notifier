@@ -9,6 +9,15 @@ const getClient = () => client || (client = new GitHub(getInput('token')))
 export const issueTitle = (upstreamReference: string) =>
   `upstream reference closed: ${upstreamReference}`
 
+export const issueBody = (
+  upstreamReference: string,
+  type: string,
+  thisOwner: string,
+  thisRepo: string,
+  file: string
+) =>
+  `The upstream [${type}](https://${upstreamReference}) got closed. I found the reference in [this file](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}).`
+
 export const createIssue = (
   params: Octokit.IssuesCreateParamsDeprecatedAssignee
 ) =>
@@ -75,5 +84,6 @@ export default {
   shouldIgnore,
   createIssue,
   issueTitle,
-  issueIsClosed
+  issueIsClosed,
+  issueBody
 }
