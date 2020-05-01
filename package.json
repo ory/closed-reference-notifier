@@ -8,7 +8,8 @@
     "watch": "tsc -w",
     "test": "jest",
     "test:watch": "jest --watch",
-    "format": "prettier --single-quote --no-semi --trailing-comma none --write src"
+    "format": "prettier --single-quote --no-semi --trailing-comma none --write src",
+    "format:check": "prettier --check --single-quote --no-semi --trailing-comma none src"
   },
   "repository": {
     "type": "git",
