@@ -1,0 +1,36 @@
+{
+  "name": "closed-reference-notifier",
+  "version": "0.0.1",
+  "description": "A GitHub action to open an issue when GitHub references in your code are closed.",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "ncc build src/index.ts -o dist",
+    "watch": "tsc -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "format": "prettier --single-quote --no-semi --trailing-comma none --write src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ory/closed-reference-notifier.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ory/closed-reference-notifier/issues"
+  },
+  "homepage": "https://github.com/ory/closed-reference-notifier#readme",
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "@zeit/ncc": "^0.22.1",
+    "jest": "^25.5.2",
+    "prettier": "^2.0.5",
+    "ts-jest": "^25.4.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.3",
+    "@actions/github": "^2.1.1",
+    "walkdir": "^0.4.1"
+  }
+}
