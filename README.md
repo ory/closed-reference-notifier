@@ -11,7 +11,8 @@ dsn = `${dsn}&multiStatements=true`
 ```
 
 You will then either have to remind yourself to check back
-or (more likely) you will stumble across the comment some time later to check whether the issue got fixed.
+or (more likely) you will stumble across the comment some time later to manually
+check whether the issue got fixed.
 This simple GitHub actions searches your whole repository for references to GitHub pulls and issues.
 When it finds a closed reference it will open an issue in your repository.
 That way you will automatically be reminded to check back on the reference.
