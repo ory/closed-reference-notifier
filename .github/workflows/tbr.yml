@@ -1,0 +1,17 @@
+on: [push, pull_request]
+
+jobs:
+  test-build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: npm ci
+      - name: Check format
+        run: npm run format:check
+      - name: Run build
+        run: npm run build
+      - name: Check that the current build was submitted
+        run: git diff --exit-code
+      - name: Run tests
+        run: npm run test
