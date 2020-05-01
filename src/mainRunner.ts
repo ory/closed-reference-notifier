@@ -1,6 +1,7 @@
 import helpers from './helpers'
 import fs from 'fs'
 import walkdir from 'walkdir'
+import path from 'path'
 
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm
 
@@ -10,7 +11,7 @@ export type Dependencies = typeof helpers & {
   thisOwner: string
   thisRepo: string
   readFile: (path: string) => Promise<string | Buffer>
-  path: string
+  directory: string
 }
 
 const mainRunner = ({
@@ -25,17 +26,18 @@ const mainRunner = ({
   readFile,
   ignorePaths,
   issueIsClosed,
-  path
+  directory,
+  issueBody
 }: Dependencies) =>
   walkdir
-    .async(path, { return_object: true })
+    .async(directory, { return_object: true })
     .then((files) =>
       Promise.all(
         Object.entries(files).map<Promise<void[] | void>>(
-          ([path, stats]: [string, fs.Stats]) =>
-            stats.isDirectory() || shouldIgnore(ignorePaths, path)
+          ([filePath, stats]: [string, fs.Stats]) =>
+            stats.isDirectory() || shouldIgnore(ignorePaths, filePath)
               ? Promise.resolve()
-              : readFile(path).then(
+              : readFile(filePath).then(
                   (data): Promise<void[]> =>
                     Promise.all(
                       Array.from(data.toString().matchAll(referenceRegex)).map<
@@ -57,7 +59,14 @@ const mainRunner = ({
                                         owner: thisOwner,
                                         repo: thisRepo,
                                         labels,
-                                        title: issueTitle(reference)
+                                        title: issueTitle(reference),
+                                        body: issueBody(
+                                          reference,
+                                          type,
+                                          thisOwner,
+                                          thisRepo,
+                                          path.relative(directory, filePath)
+                                        )
                                       })
                                     : Promise.resolve()
                                 )
