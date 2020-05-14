@@ -14,4 +14,4 @@ inputs:
     default: closed reference
 runs:
   using: node12
-  main: dist/index.js
+  main: distAction/index.js
