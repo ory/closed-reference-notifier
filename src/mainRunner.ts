@@ -35,7 +35,8 @@ const mainRunner = ({
       Promise.all(
         Object.entries(files).map<Promise<void[] | void>>(
           ([filePath, stats]: [string, fs.Stats]) =>
-            stats.isDirectory() || shouldIgnore(ignorePaths, filePath)
+            stats.isDirectory() ||
+            shouldIgnore(ignorePaths, path.relative(directory, filePath))
               ? Promise.resolve()
               : readFile(filePath).then(
                   (data): Promise<void[]> =>

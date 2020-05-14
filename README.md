@@ -26,7 +26,7 @@ All other inputs are optional.
 
 Key | Description | Default value
 --- | --- | ---
-ignore | ignore paths, comma seperated list | .git
+ignore | ignore paths, comma seperated list of .gitignore style entries | .git
 issueLabels | the labels to create issues with, comma seperated list | closed reference
 
 Verbose example with all inputs:
@@ -47,4 +47,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ignore: .git
           issueLabels: closed reference
+```
+
+## Testing manually before automating
+
+To manually test what references this action finds you can run
+
+<!-- update when published to npm https://github.com/ory/closed-reference-notifier/issues/13 -->
+
+```
+$ npx git+https://git@github.com/ory/closed-reference-runner.git local/path/to/repo ignore,list
 ```

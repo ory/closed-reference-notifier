@@ -1,7 +1,7 @@
 import { getInput, setFailed } from '@actions/core'
 import { GitHub } from '@actions/github'
 import { Octokit } from '@octokit/rest'
-import path from 'path'
+import ignore, { Ignore } from 'ignore'
 
 let client: GitHub
 const getClient = () => client || (client = new GitHub(getInput('token')))
@@ -25,14 +25,9 @@ export const createIssue = (
     .issues.create(params)
     .then(() => Promise.resolve())
 
-export const shouldIgnore = (ignorePaths: Array<string>, absPath: string) =>
-  ignorePaths.reduce(
-    (ignore: boolean, ignorePath) =>
-      ignore ||
-      absPath === ignorePath ||
-      !path.relative(ignorePath, absPath).startsWith('..'),
-    false
-  )
+let ignoreCached: Ignore
+export const shouldIgnore = (ignorePaths: Array<string>, relPath: string) =>
+  (ignoreCached || (ignoreCached = ignore().add(ignorePaths))).ignores(relPath)
 
 export const exitWithReason = (r: any) => {
   console.log(r)
