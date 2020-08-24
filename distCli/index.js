@@ -491,6 +491,19 @@ module.exports = windowsRelease;
 
 "use strict";
 
+// Copyright © 2020 Patrik Neu, Ory Corp patrik@ory.sh
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -498,27 +511,43 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const walkdir_1 = __importDefault(__webpack_require__(704));
 const path_1 = __importDefault(__webpack_require__(622));
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
-const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, labels, thisOwner, thisRepo, readFile, ignorePaths, issueIsClosed, directory, issueBody }) => walkdir_1.default
-    .async(directory, { return_object: true })
-    .then((files) => Promise.all(Object.entries(files).map(([filePath, stats]) => stats.isDirectory() ||
+const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, labels, thisOwner, thisRepo, readFile, ignorePaths, issueIsClosed, directory, issueBody, issueLimit }) => walkdir_1.default.async(directory, { return_object: true }).then((files) => Promise.all(Object.entries(files).reduce((allIssues, [filePath, stats]) => stats.isDirectory() ||
     shouldIgnore(ignorePaths, path_1.default.relative(directory, filePath))
-    ? Promise.resolve()
-    : readFile(filePath).then((data) => Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map(([reference, owner, repo, type, issueNumber]) => issueIsClosed({
-        owner,
-        repo,
-        issueNumber
-    }).then((isClosed) => !isClosed
-        ? Promise.resolve()
-        : issueExists(reference).then((exists) => !exists
-            ? createIssue({
-                owner: thisOwner,
-                repo: thisRepo,
-                labels,
-                title: issueTitle(reference),
-                body: issueBody(reference, type, thisOwner, thisRepo, path_1.default.relative(directory, filePath))
-            })
-            : Promise.resolve()))))))))
-    .catch(exitWithReason);
+    ? allIssues
+    : [
+        ...allIssues,
+        readFile(filePath).then((data) => Promise.all(Array.from(data.toString().matchAll(referenceRegex)).map(([reference, owner, repo, type, issueNumber]) => issueIsClosed({
+            owner,
+            repo,
+            issueNumber
+        }).then((isClosed) => !isClosed
+            ? undefined
+            : issueExists(reference).then((exists) => !exists
+                ? {
+                    reference,
+                    type,
+                    relativePath: path_1.default.relative(directory, filePath)
+                }
+                : undefined)))))
+    ], []))
+    .then((issues) => issues.flat(1).filter((i) => i))
+    .then((issues) => issues.length > issueLimit
+    ? exitWithReason(`Found too many closed references (${issues.length}):
+
+I would create too many issues, here they are:
+
+${JSON.stringify(issues)}
+
+To still create them, please raise the limit temporarily
+`)
+    : issues.forEach(({ relativePath, reference, type }) => createIssue({
+        owner: thisOwner,
+        repo: thisRepo,
+        labels,
+        title: issueTitle(reference),
+        body: issueBody(reference, type, thisOwner, thisRepo, relativePath)
+    })))
+    .catch(exitWithReason));
 exports.default = mainRunner;
 
 
@@ -8050,7 +8079,8 @@ npx closed-reference-notifier <dir> <ignore>
             process.exit(1);
         },
         labels: [],
-        readFile: fs.promises.readFile
+        readFile: fs.promises.readFile,
+        issueLimit: Number.POSITIVE_INFINITY
     });
 })();
 
@@ -24395,6 +24425,19 @@ module.exports = function (str) {
 
 "use strict";
 
+// Copyright © 2020 Patrik Neu, Ory Corp patrik@ory.sh
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
