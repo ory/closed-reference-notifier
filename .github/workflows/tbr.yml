@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  test-build-release:
+  format-test-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,3 +17,11 @@ jobs:
         run: npm run format:check
       - name: Run tests
         run: npm run test
+      - name: Build bundles
+        run: npm build
+      - name: Push build
+        run: |
+          git config --local user.email "zepatrik@users.noreply.github.com"
+          git config --local user.name "zepatrik"
+          git commit -a -m "autogen: build bundles"
+          git push "https://${GITHUB_ACTOR}:${INPUT_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF#refs/heads/}
