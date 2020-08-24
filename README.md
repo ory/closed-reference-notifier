@@ -61,5 +61,5 @@ To manually test what references this action finds you can run
 <!-- update when published to npm https://github.com/ory/closed-reference-notifier/issues/13 -->
 
 ```
-$ npx https://github.com/ory/closed-reference-runner.git local/path/to/repo ignore,list
+$ npx https://github.com/ory/closed-reference-notifier.git local/path/to/repo ignore,list
 ```

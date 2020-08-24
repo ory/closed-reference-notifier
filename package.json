@@ -2,10 +2,10 @@
   "name": "closed-reference-notifier",
   "version": "1.1.0",
   "description": "A GitHub action to open an issue when GitHub references in your code are closed.",
-  "main": "distCli/index.js",
+  "bin": "distCli/index.js",
   "scripts": {
     "build": "npm-run-all build:*",
-    "build:cli": "ncc build src/runInCli.ts -o distCli",
+    "build:cli": "ncc build src/runInCli.ts -o distCli && echo -e \"#!/usr/bin/env node\\n$(cat distCli/index.js)\" > distCli/index.js",
     "build:action": "ncc build src/runInAction.ts -o distAction",
     "watch": "tsc -w",
     "test": "jest",

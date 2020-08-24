@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 module.exports =
 /******/ (function(modules, runtime) { // webpackBootstrap
 /******/ 	"use strict";
@@ -629,7 +630,7 @@ var funcTag = '[object Function]',
  * Used to match `RegExp`
  * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
  */
-var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+var reRegExpChar = /[\^$.*+?()[\]{}|]/g;
 
 /** Used to detect host constructors (Safari). */
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
@@ -825,8 +826,8 @@ var objectToString = objectProto.toString;
 
 /** Used to detect if a method is native. */
 var reIsNative = RegExp('^' +
-  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\()| for .+?(?=\\])/g, '$1.*?') + '$'
 );
 
 /** Built-in value references. */
@@ -1691,7 +1692,8 @@ TunnelingAgent.prototype.createSocket = function createSocket(options, cb) {
   function onError(cause) {
     connectReq.removeAllListeners();
 
-    debug('tunneling socket could not be established, cause=%s\n',
+    debug('tunneling socket could not be established, cause=%s
+',
           cause.message, cause.stack);
     var error = new Error('tunneling socket could not be established, ' +
                           'cause=' + cause.message);
@@ -1764,7 +1766,7 @@ function mergeOptions(target) {
 
 
 var debug;
-if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
+if (process.env.NODE_DEBUG && /tunnel/.test(process.env.NODE_DEBUG)) {
   debug = function() {
     var args = Array.prototype.slice.call(arguments);
     if (typeof args[0] === 'string') {
@@ -2356,7 +2358,7 @@ var debug
 if (typeof process === 'object' &&
     process.env &&
     process.env.NODE_DEBUG &&
-    /\bsemver\b/i.test(process.env.NODE_DEBUG)) {
+    /semver/i.test(process.env.NODE_DEBUG)) {
   debug = function () {
     var args = Array.prototype.slice.call(arguments, 0)
     args.unshift('SEMVER')
@@ -2389,7 +2391,7 @@ var R = 0
 // A single `0`, or a non-zero digit followed by zero or more digits.
 
 var NUMERICIDENTIFIER = R++
-src[NUMERICIDENTIFIER] = '0|[1-9]\\d*'
+src[NUMERICIDENTIFIER] = '0|[1-9]\d*'
 var NUMERICIDENTIFIERLOOSE = R++
 src[NUMERICIDENTIFIERLOOSE] = '[0-9]+'
 
@@ -2398,19 +2400,19 @@ src[NUMERICIDENTIFIERLOOSE] = '[0-9]+'
 // more letters, digits, or hyphens.
 
 var NONNUMERICIDENTIFIER = R++
-src[NONNUMERICIDENTIFIER] = '\\d*[a-zA-Z-][a-zA-Z0-9-]*'
+src[NONNUMERICIDENTIFIER] = '\d*[a-zA-Z-][a-zA-Z0-9-]*'
 
 // ## Main Version
 // Three dot-separated numeric identifiers.
 
 var MAINVERSION = R++
-src[MAINVERSION] = '(' + src[NUMERICIDENTIFIER] + ')\\.' +
-                   '(' + src[NUMERICIDENTIFIER] + ')\\.' +
+src[MAINVERSION] = '(' + src[NUMERICIDENTIFIER] + ')\.' +
+                   '(' + src[NUMERICIDENTIFIER] + ')\.' +
                    '(' + src[NUMERICIDENTIFIER] + ')'
 
 var MAINVERSIONLOOSE = R++
-src[MAINVERSIONLOOSE] = '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' +
-                        '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' +
+src[MAINVERSIONLOOSE] = '(' + src[NUMERICIDENTIFIERLOOSE] + ')\.' +
+                        '(' + src[NUMERICIDENTIFIERLOOSE] + ')\.' +
                         '(' + src[NUMERICIDENTIFIERLOOSE] + ')'
 
 // ## Pre-release Version Identifier
@@ -2430,11 +2432,11 @@ src[PRERELEASEIDENTIFIERLOOSE] = '(?:' + src[NUMERICIDENTIFIERLOOSE] +
 
 var PRERELEASE = R++
 src[PRERELEASE] = '(?:-(' + src[PRERELEASEIDENTIFIER] +
-                  '(?:\\.' + src[PRERELEASEIDENTIFIER] + ')*))'
+                  '(?:\.' + src[PRERELEASEIDENTIFIER] + ')*))'
 
 var PRERELEASELOOSE = R++
 src[PRERELEASELOOSE] = '(?:-?(' + src[PRERELEASEIDENTIFIERLOOSE] +
-                       '(?:\\.' + src[PRERELEASEIDENTIFIERLOOSE] + ')*))'
+                       '(?:\.' + src[PRERELEASEIDENTIFIERLOOSE] + ')*))'
 
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
@@ -2447,8 +2449,8 @@ src[BUILDIDENTIFIER] = '[0-9A-Za-z-]+'
 // identifiers.
 
 var BUILD = R++
-src[BUILD] = '(?:\\+(' + src[BUILDIDENTIFIER] +
-             '(?:\\.' + src[BUILDIDENTIFIER] + ')*))'
+src[BUILD] = '(?:\+(' + src[BUILDIDENTIFIER] +
+             '(?:\.' + src[BUILDIDENTIFIER] + ')*))'
 
 // ## Full Version String
 // A main version, followed optionally by a pre-release version and
@@ -2469,7 +2471,7 @@ src[FULL] = '^' + FULLPLAIN + '$'
 // like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
 // also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
 // common in the npm registry.
-var LOOSEPLAIN = '[v=\\s]*' + src[MAINVERSIONLOOSE] +
+var LOOSEPLAIN = '[v=\s]*' + src[MAINVERSIONLOOSE] +
                  src[PRERELEASELOOSE] + '?' +
                  src[BUILD] + '?'
 
@@ -2483,39 +2485,39 @@ src[GTLT] = '((?:<|>)?=?)'
 // Note that "x.x" is a valid xRange identifer, meaning "any version"
 // Only the first item is strictly required.
 var XRANGEIDENTIFIERLOOSE = R++
-src[XRANGEIDENTIFIERLOOSE] = src[NUMERICIDENTIFIERLOOSE] + '|x|X|\\*'
+src[XRANGEIDENTIFIERLOOSE] = src[NUMERICIDENTIFIERLOOSE] + '|x|X|\*'
 var XRANGEIDENTIFIER = R++
-src[XRANGEIDENTIFIER] = src[NUMERICIDENTIFIER] + '|x|X|\\*'
+src[XRANGEIDENTIFIER] = src[NUMERICIDENTIFIER] + '|x|X|\*'
 
 var XRANGEPLAIN = R++
-src[XRANGEPLAIN] = '[v=\\s]*(' + src[XRANGEIDENTIFIER] + ')' +
-                   '(?:\\.(' + src[XRANGEIDENTIFIER] + ')' +
-                   '(?:\\.(' + src[XRANGEIDENTIFIER] + ')' +
+src[XRANGEPLAIN] = '[v=\s]*(' + src[XRANGEIDENTIFIER] + ')' +
+                   '(?:\.(' + src[XRANGEIDENTIFIER] + ')' +
+                   '(?:\.(' + src[XRANGEIDENTIFIER] + ')' +
                    '(?:' + src[PRERELEASE] + ')?' +
                    src[BUILD] + '?' +
                    ')?)?'
 
 var XRANGEPLAINLOOSE = R++
-src[XRANGEPLAINLOOSE] = '[v=\\s]*(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
-                        '(?:\\.(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
-                        '(?:\\.(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
+src[XRANGEPLAINLOOSE] = '[v=\s]*(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
+                        '(?:\.(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
+                        '(?:\.(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
                         '(?:' + src[PRERELEASELOOSE] + ')?' +
                         src[BUILD] + '?' +
                         ')?)?'
 
 var XRANGE = R++
-src[XRANGE] = '^' + src[GTLT] + '\\s*' + src[XRANGEPLAIN] + '$'
+src[XRANGE] = '^' + src[GTLT] + '\s*' + src[XRANGEPLAIN] + '$'
 var XRANGELOOSE = R++
-src[XRANGELOOSE] = '^' + src[GTLT] + '\\s*' + src[XRANGEPLAINLOOSE] + '$'
+src[XRANGELOOSE] = '^' + src[GTLT] + '\s*' + src[XRANGEPLAINLOOSE] + '$'
 
 // Coercion.
 // Extract anything that could conceivably be a part of a valid semver
 var COERCE = R++
-src[COERCE] = '(?:^|[^\\d])' +
-              '(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '})' +
-              '(?:\\.(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' +
-              '(?:\\.(\\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' +
-              '(?:$|[^\\d])'
+src[COERCE] = '(?:^|[^\d])' +
+              '(\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '})' +
+              '(?:\.(\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' +
+              '(?:\.(\d{1,' + MAX_SAFE_COMPONENT_LENGTH + '}))?' +
+              '(?:$|[^\d])'
 
 // Tilde ranges.
 // Meaning is "reasonably at or greater than"
@@ -2523,7 +2525,7 @@ var LONETILDE = R++
 src[LONETILDE] = '(?:~>?)'
 
 var TILDETRIM = R++
-src[TILDETRIM] = '(\\s*)' + src[LONETILDE] + '\\s+'
+src[TILDETRIM] = '(\s*)' + src[LONETILDE] + '\s+'
 re[TILDETRIM] = new RegExp(src[TILDETRIM], 'g')
 var tildeTrimReplace = '$1~'
 
@@ -2535,10 +2537,10 @@ src[TILDELOOSE] = '^' + src[LONETILDE] + src[XRANGEPLAINLOOSE] + '$'
 // Caret ranges.
 // Meaning is "at least and backwards compatible with"
 var LONECARET = R++
-src[LONECARET] = '(?:\\^)'
+src[LONECARET] = '(?:\^)'
 
 var CARETTRIM = R++
-src[CARETTRIM] = '(\\s*)' + src[LONECARET] + '\\s+'
+src[CARETTRIM] = '(\s*)' + src[LONECARET] + '\s+'
 re[CARETTRIM] = new RegExp(src[CARETTRIM], 'g')
 var caretTrimReplace = '$1^'
 
@@ -2549,15 +2551,15 @@ src[CARETLOOSE] = '^' + src[LONECARET] + src[XRANGEPLAINLOOSE] + '$'
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 var COMPARATORLOOSE = R++
-src[COMPARATORLOOSE] = '^' + src[GTLT] + '\\s*(' + LOOSEPLAIN + ')$|^$'
+src[COMPARATORLOOSE] = '^' + src[GTLT] + '\s*(' + LOOSEPLAIN + ')$|^$'
 var COMPARATOR = R++
-src[COMPARATOR] = '^' + src[GTLT] + '\\s*(' + FULLPLAIN + ')$|^$'
+src[COMPARATOR] = '^' + src[GTLT] + '\s*(' + FULLPLAIN + ')$|^$'
 
 // An expression to strip any whitespace between the gtlt and the thing
 // it modifies, so that `> 1.2.3` ==> `>1.2.3`
 var COMPARATORTRIM = R++
-src[COMPARATORTRIM] = '(\\s*)' + src[GTLT] +
-                      '\\s*(' + LOOSEPLAIN + '|' + src[XRANGEPLAIN] + ')'
+src[COMPARATORTRIM] = '(\s*)' + src[GTLT] +
+                      '\s*(' + LOOSEPLAIN + '|' + src[XRANGEPLAIN] + ')'
 
 // this one has to use the /g flag
 re[COMPARATORTRIM] = new RegExp(src[COMPARATORTRIM], 'g')
@@ -2568,20 +2570,20 @@ var comparatorTrimReplace = '$1$2$3'
 // checked against either the strict or loose comparator form
 // later.
 var HYPHENRANGE = R++
-src[HYPHENRANGE] = '^\\s*(' + src[XRANGEPLAIN] + ')' +
-                   '\\s+-\\s+' +
+src[HYPHENRANGE] = '^\s*(' + src[XRANGEPLAIN] + ')' +
+                   '\s+-\s+' +
                    '(' + src[XRANGEPLAIN] + ')' +
-                   '\\s*$'
+                   '\s*$'
 
 var HYPHENRANGELOOSE = R++
-src[HYPHENRANGELOOSE] = '^\\s*(' + src[XRANGEPLAINLOOSE] + ')' +
-                        '\\s+-\\s+' +
+src[HYPHENRANGELOOSE] = '^\s*(' + src[XRANGEPLAINLOOSE] + ')' +
+                        '\s+-\s+' +
                         '(' + src[XRANGEPLAINLOOSE] + ')' +
-                        '\\s*$'
+                        '\s*$'
 
 // Star ranges basically just allow anything at all.
 var STAR = R++
-src[STAR] = '(<|>)?=?\\s*\\*'
+src[STAR] = '(<|>)?=?\s*\*'
 
 // Compile to actual regexp objects.
 // All are flag-free, unless they were created above with a flag.
@@ -4947,9 +4949,10 @@ function makeArray (subject) {
 }
 
 const REGEX_TEST_BLANK_LINE = /^\s+$/
-const REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION = /^\\!/
-const REGEX_REPLACE_LEADING_EXCAPED_HASH = /^\\#/
-const REGEX_SPLITALL_CRLF = /\r?\n/g
+const REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION = /^\!/
+const REGEX_REPLACE_LEADING_EXCAPED_HASH = /^\#/
+const REGEX_SPLITALL_CRLF = /?
+/g
 // /foo,
 // ./foo,
 // ../foo,
@@ -4997,15 +5000,15 @@ const REPLACERS = [
     // (a\ ) -> (a )
     // (a  ) -> (a)
     // (a \ ) -> (a  )
-    /\\?\s+$/,
-    match => match.indexOf('\\') === 0
+    /\?\s+$/,
+    match => match.indexOf('\') === 0
       ? ' '
       : ''
   ],
 
   // replace (\ ) with ' '
   [
-    /\\\s/g,
+    /\\s/g,
     () => ' '
   ],
 
@@ -5027,8 +5030,8 @@ const REPLACERS = [
   // > - the opening curly brace {,
   // > These special characters are often called "metacharacters".
   [
-    /[\\^$.|*+(){]/g,
-    match => `\\${match}`
+    /[\^$.|*+(){]/g,
+    match => `\${match}`
   ],
 
   [
@@ -5037,12 +5040,12 @@ const REPLACERS = [
     /\[([^\]/]*)($|\])/g,
     (match, p1, p2) => p2 === ']'
       ? `[${sanitizeRange(p1)}]`
-      : `\\${match}`
+      : `\${match}`
   ],
 
   [
     // > a question mark (?) matches a single character
-    /(?!\\)\?/g,
+    /(?!\)\?/g,
     () => '[^/]'
   ],
 
@@ -5059,7 +5062,7 @@ const REPLACERS = [
   // replace special metacharacter slash after the leading slash
   [
     /\//g,
-    () => '\\/'
+    () => '\/'
   ],
 
   [
@@ -5068,11 +5071,11 @@ const REPLACERS = [
     // > the same as pattern "foo".
     // > "**/foo/bar" matches file or directory "bar" anywhere that is directly
     // >   under directory "foo".
-    // Notice that the '*'s have been replaced as '\\*'
-    /^\^*\\\*\\\*\\\//,
+    // Notice that the '*'s have been replaced as '\*'
+    /^\^*\\*\\*\\//,
 
     // '**/foo' <-> 'foo'
-    () => '^(?:.*\\/)?'
+    () => '^(?:.*\/)?'
   ],
 
   // ending
@@ -5097,7 +5100,7 @@ const REPLACERS = [
       // foo/ will not match 'foo'
       ? `${match}$`
       // foo matches 'foo' and 'foo/'
-      : `${match}(?=$|\\/$)`
+      : `${match}(?=$|\/$)`
   ],
 
   // starting
@@ -5121,7 +5124,7 @@ const REPLACERS = [
         // > level of the particular .gitignore file itself.
         // > Otherwise the pattern may also match at any level below
         // > the .gitignore level.
-        ? '(?:^|\\/)'
+        ? '(?:^|\/)'
 
         // > Otherwise, Git treats the pattern as a shell glob suitable for
         // >   consumption by fnmatch(3)
@@ -5132,7 +5135,7 @@ const REPLACERS = [
   // two globstars
   [
     // Use lookahead assertions so that we could match more than one `'/**'`
-    /\\\/\\\*\\\*(?=\\\/|$)/g,
+    /\\/\\*\\*(?=\\/|$)/g,
 
     // Zero, one or several directories
     // should not use '*', or it will be replaced by the next replacer
@@ -5145,13 +5148,13 @@ const REPLACERS = [
       // >   zero or more directories.
       // > For example, "a/**/b" matches "a/b", "a/x/b", "a/x/y/b" and so on.
       // '/**/'
-      ? '(?:\\/[^\\/]+)*'
+      ? '(?:\/[^\/]+)*'
 
       // case: /**
       // > A trailing `"/**"` matches everything inside.
 
       // #21: everything inside but it should not include the current folder
-      : '\\/.+'
+      : '\/.+'
   ],
 
   // intermediate wildcards
@@ -5161,23 +5164,23 @@ const REPLACERS = [
 
     // 'abc.*/' -> go
     // 'abc.*'  -> skip this rule
-    /(^|[^\\]+)\\\*(?=.+)/g,
+    /(^|[^\]+)\\*(?=.+)/g,
 
     // '*.js' matches '.js'
     // '*.js' doesn't match 'abc'
-    (_, p1) => `${p1}[^\\/]*`
+    (_, p1) => `${p1}[^\/]*`
   ],
 
   // trailing wildcard
   [
-    /(\^|\\\/)?\\\*$/,
+    /(\^|\\/)?\\*$/,
     (_, p1) => {
       const prefix = p1
         // '\^':
         // '/*' does not match ''
         // '/*' does not match everything
 
-        // '\\\/':
+        // '\\/':
         // 'abc/*' does not match 'abc/'
         ? `${p1}[^/]+`
 
@@ -5185,14 +5188,14 @@ const REPLACERS = [
         // 'a*' matches 'aa'
         : '[^/]*'
 
-      return `${prefix}(?=$|\\/$)`
+      return `${prefix}(?=$|\/$)`
     }
   ],
 
   [
     // unescape
-    /\\\\\\/g,
-    () => '\\'
+    /\\\/g,
+    () => '\'
   ]
 ]
 
@@ -5493,15 +5496,15 @@ if (
   )
 ) {
   /* eslint no-control-regex: "off" */
-  const makePosix = str => /^\\\\\?\\/.test(str)
-  || /["<>|\u0000-\u001F]+/u.test(str)
+  const makePosix = str => /^\\\?\/.test(str)
+  || /["<>| -]+/u.test(str)
     ? str
-    : str.replace(/\\/g, '/')
+    : str.replace(/\/g, '/')
 
   checkPath.convert = makePosix
 
-  // 'C:\\foo'     <- 'C:\\foo' has been converted to 'C:/'
-  // 'd:\\foo'
+  // 'C:\foo'     <- 'C:\foo' has been converted to 'C:/'
+  // 'd:\foo'
   const REGIX_IS_WINDOWS_PATH_ABSOLUTE = /^[a-z]:\//i
   checkPath.isNotRelative = path =>
     REGIX_IS_WINDOWS_PATH_ABSOLUTE.test(path)
@@ -5685,14 +5688,16 @@ class Command {
 function escapeData(s) {
     return (s || '')
         .replace(/%/g, '%25')
-        .replace(/\r/g, '%0D')
-        .replace(/\n/g, '%0A');
+        .replace(//g, '%0D')
+        .replace(/
+/g, '%0A');
 }
 function escapeProperty(s) {
     return (s || '')
         .replace(/%/g, '%25')
-        .replace(/\r/g, '%0D')
-        .replace(/\n/g, '%0A')
+        .replace(//g, '%0D')
+        .replace(/
+/g, '%0A')
         .replace(/:/g, '%3A')
         .replace(/,/g, '%2C');
 }
@@ -5848,7 +5853,7 @@ class Blob {
 		this[BUFFER] = Buffer.concat(buffers);
 
 		let type = options && options.type !== undefined && String(options.type).toLowerCase();
-		if (type && !/[^\u0020-\u007E]/.test(type)) {
+		if (type && !/[^ -~]/.test(type)) {
 			this[TYPE] = type;
 		}
 	}
@@ -6457,7 +6462,7 @@ Body.Promise = global.Promise;
  */
 
 const invalidTokenRegex = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
-const invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/;
+const invalidHeaderCharRegex = /[^	 -~€-ÿ]/;
 
 function validateName(name) {
 	name = `${name}`;
@@ -7463,12 +7468,12 @@ function escapeArgument(arg, doubleEscapeMetaChars) {
 
     // Sequence of backslashes followed by a double quote:
     // double up all the backslashes and escape the double quote
-    arg = arg.replace(/(\\*)"/g, '$1$1\\"');
+    arg = arg.replace(/(\*)"/g, '$1$1\"');
 
     // Sequence of backslashes followed by the end of the string
     // (which will become a double quote later):
     // double up all the backslashes
-    arg = arg.replace(/(\\*)$/, '$1$1');
+    arg = arg.replace(/(\*)$/, '$1$1');
 
     // All other backslashes occur literally
 
@@ -7541,9 +7546,9 @@ class RequestError extends Error {
 
     requestCopy.url = requestCopy.url // client_id & client_secret can be passed as URL query parameters to increase rate limit
     // see https://developer.github.com/v3/#increasing-the-unauthenticated-rate-limit-for-oauth-applications
-    .replace(/\bclient_secret=\w+/g, "client_secret=[REDACTED]") // OAuth tokens can be passed as URL query parameters, although it is not recommended
+    .replace(/client_secret=\w+/g, "client_secret=[REDACTED]") // OAuth tokens can be passed as URL query parameters, although it is not recommended
     // see https://developer.github.com/v3/#oauth2-token-sent-in-a-header
-    .replace(/\baccess_token=\w+/g, "access_token=[REDACTED]");
+    .replace(/access_token=\w+/g, "access_token=[REDACTED]");
     this.request = requestCopy;
   }
 
@@ -8775,7 +8780,7 @@ const semver = __webpack_require__(280);
 
 const isWin = process.platform === 'win32';
 const isExecutableRegExp = /\.(?:com|exe)$/i;
-const isCmdShimRegExp = /node_modules[\\/].bin[\\/][^\\/]+\.cmd$/i;
+const isCmdShimRegExp = /node_modules[\/].bin[\/][^\/]+\.cmd$/i;
 
 // `options.shell` is supported in Node ^4.8.0, ^5.7.0 and >= 6.0.0
 const supportsShellOption = niceTry(() => semver.satisfies(process.version, '^4.8.0 || ^5.7.0 || >= 6.0.0', true)) || false;
@@ -8815,7 +8820,7 @@ function parseNonShell(parsed) {
         // we need to double escape them
         const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
 
-        // Normalize posix paths into OS compatible paths (e.g.: foo/bar -> foo\bar)
+        // Normalize posix paths into OS compatible paths (e.g.: foo/bar -> fooar)
         // This is necessary otherwise it will always fail with ENOENT in those cases
         parsed.command = path.normalize(parsed.command);
 
@@ -9514,7 +9519,8 @@ function walkdir(path,options,cb){
   emitter.once('fail',function(_path,err){
     //if the first dir fails its a real error
     if(path == _path) {
-      emitter.emit('error',new Error('error reading first path in the walk '+path+'\n'+err),err);
+      emitter.emit('error',new Error('error reading first path in the walk '+path+'
+'+err),err);
     }
   });
 
@@ -9822,8 +9828,10 @@ function removeHook (state, name, method) {
 "use strict";
 
 module.exports = function (x) {
-	var lf = typeof x === 'string' ? '\n' : '\n'.charCodeAt();
-	var cr = typeof x === 'string' ? '\r' : '\r'.charCodeAt();
+	var lf = typeof x === 'string' ? '
+' : '
+'.charCodeAt();
+	var cr = typeof x === 'string' ? '' : ''.charCodeAt();
 
 	if (x[x.length - 1] === lf) {
 		x = x.slice(0, x.length - 1);
@@ -9983,7 +9991,7 @@ function getPathInfo (cmd, opt) {
 
   // If it has a slash, then we don't bother searching the pathenv.
   // just check the file itself, and that's it.
-  if (cmd.match(/\//) || isWindows && cmd.match(/\\/))
+  if (cmd.match(/\//) || isWindows && cmd.match(/\/))
     pathEnv = ['']
 
   return {
@@ -10018,7 +10026,7 @@ function which (cmd, opt, cb) {
       pathPart = pathPart.slice(1, -1)
 
     var p = path.join(pathPart, cmd)
-    if (!pathPart && (/^\.[\\\/]/).test(cmd)) {
+    if (!pathPart && (/^\.[\\/]/).test(cmd)) {
       p = cmd.slice(0, 2) + p
     }
     ;(function E (ii, ll) {
@@ -10052,7 +10060,7 @@ function whichSync (cmd, opt) {
       pathPart = pathPart.slice(1, -1)
 
     var p = path.join(pathPart, cmd)
-    if (!pathPart && /^\.[\\\/]/.test(cmd)) {
+    if (!pathPart && /^\.[\\/]/.test(cmd)) {
       p = cmd.slice(0, 2) + p
     }
     for (var j = 0, ll = pathExt.length; j < ll; j ++) {
@@ -15821,7 +15829,7 @@ var endpointsByScope = {
         position: {
           required: true,
           type: "string",
-          validation: "^(top|bottom|after:\\d+)$"
+          validation: "^(top|bottom|after:\d+)$"
         }
       },
       url: "/projects/columns/cards/:card_id/moves"
@@ -15839,7 +15847,7 @@ var endpointsByScope = {
         position: {
           required: true,
           type: "string",
-          validation: "^(first|last|after:\\d+)$"
+          validation: "^(first|last|after:\d+)$"
         }
       },
       url: "/projects/columns/:column_id/moves"
@@ -23398,19 +23406,19 @@ var funcTag = '[object Function]',
     symbolTag = '[object Symbol]';
 
 /** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\]|\.)*?\1)\]/,
     reIsPlainProp = /^\w*$/,
     reLeadingDot = /^\./,
-    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\]|\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
 /**
  * Used to match `RegExp`
  * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
  */
-var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+var reRegExpChar = /[\^$.*+?()[\]{}|]/g;
 
 /** Used to match backslashes in property paths. */
-var reEscapeChar = /\\(\\)?/g;
+var reEscapeChar = /\(\)?/g;
 
 /** Used to detect host constructors (Safari). */
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
@@ -23484,8 +23492,8 @@ var objectToString = objectProto.toString;
 
 /** Used to detect if a method is native. */
 var reIsNative = RegExp('^' +
-  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\()| for .+?(?=\\])/g, '$1.*?') + '$'
 );
 
 /** Built-in value references. */
@@ -24585,19 +24593,19 @@ var funcTag = '[object Function]',
     symbolTag = '[object Symbol]';
 
 /** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\]|\.)*?\1)\]/,
     reIsPlainProp = /^\w*$/,
     reLeadingDot = /^\./,
-    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\]|\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
 /**
  * Used to match `RegExp`
  * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
  */
-var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+var reRegExpChar = /[\^$.*+?()[\]{}|]/g;
 
 /** Used to match backslashes in property paths. */
-var reEscapeChar = /\\(\\)?/g;
+var reEscapeChar = /\(\)?/g;
 
 /** Used to detect host constructors (Safari). */
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
@@ -24674,8 +24682,8 @@ var objectToString = objectProto.toString;
 
 /** Used to detect if a method is native. */
 var reIsNative = RegExp('^' +
-  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\$&')
+  .replace(/hasOwnProperty|(function).*?(?=\\()| for .+?(?=\\])/g, '$1.*?') + '$'
 );
 
 /** Built-in value references. */
@@ -25981,14 +25989,17 @@ function makeError(result, options) {
 
 		if (Array.isArray(parsed.opts.stdio)) {
 			if (parsed.opts.stdio[2] !== 'inherit') {
-				output += output.length > 0 ? stderr : `\n${stderr}`;
+				output += output.length > 0 ? stderr : `
+${stderr}`;
 			}
 
 			if (parsed.opts.stdio[1] !== 'inherit') {
-				output += `\n${stdout}`;
+				output += `
+${stdout}`;
 			}
 		} else if (parsed.opts.stdio !== 'inherit') {
-			output = `\n${stderr}${stdout}`;
+			output = `
+${stderr}${stdout}`;
 		}
 
 		err = new Error(`Command failed: ${joinedCmd}${output}`);
