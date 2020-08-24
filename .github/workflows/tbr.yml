@@ -20,9 +20,7 @@ jobs:
       - name: Build bundles
         run: npm build
       - name: Push build
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.email "zepatrik@users.noreply.github.com"
           git config --local user.name "zepatrik"
-          git commit -a -m "autogen: build bundles" && git push "https://${GITHUB_ACTOR}:${INPUT_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF#refs/heads/} || true
+          git commit -a -m "autogen: build bundles" && git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF#refs/heads/} || true
