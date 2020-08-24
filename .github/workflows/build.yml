@@ -2,21 +2,13 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
 
 jobs:
   format-test-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
       - run: npm ci
-      - name: Check format
-        run: npm run format:check
-      - name: Run tests
-        run: npm run test
       - name: Build bundles
         run: npm run build
       - name: Push build
@@ -24,4 +16,4 @@ jobs:
           git config --local user.email "zepatrik@users.noreply.github.com"
           git config --local user.name "zepatrik"
           git add distCli distAction
-          git commit -a -m "autogen: build bundles" && git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF#refs/heads/} || true
+          git commit -a -m "autogen: build bundles" && git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:master || true
