@@ -26,6 +26,13 @@ export type Dependencies = typeof helpers & {
   thisRepo: string
   readFile: (path: string) => Promise<string | Buffer>
   directory: string
+  issueLimit: number
+}
+
+type IssuePayload = {
+  relativePath: string
+  reference: string
+  type: string
 }
 
 const mainRunner = ({
@@ -41,57 +48,83 @@ const mainRunner = ({
   ignorePaths,
   issueIsClosed,
   directory,
-  issueBody
+  issueBody,
+  issueLimit
 }: Dependencies) =>
-  walkdir
-    .async(directory, { return_object: true })
-    .then((files) =>
-      Promise.all(
-        Object.entries(files).map<Promise<void[] | void>>(
-          ([filePath, stats]: [string, fs.Stats]) =>
-            stats.isDirectory() ||
-            shouldIgnore(ignorePaths, path.relative(directory, filePath))
-              ? Promise.resolve()
-              : readFile(filePath).then(
-                  (data): Promise<void[]> =>
+  walkdir.async(directory, { return_object: true }).then((files) =>
+    Promise.all(
+      Object.entries(files).reduce<Promise<IssuePayload[]>[]>(
+        (
+          allIssues: Promise<IssuePayload[]>[],
+          [filePath, stats]: [string, fs.Stats]
+        ) =>
+          stats.isDirectory() ||
+          shouldIgnore(ignorePaths, path.relative(directory, filePath))
+            ? allIssues
+            : [
+                ...allIssues,
+                readFile(filePath).then<IssuePayload[]>(
+                  (data): Promise<IssuePayload[]> =>
                     Promise.all(
                       Array.from(data.toString().matchAll(referenceRegex)).map<
-                        Promise<void>
-                      >(
-                        ([reference, owner, repo, type, issueNumber]): Promise<
-                          void
-                        > =>
-                          issueIsClosed({
-                            owner,
-                            repo,
-                            issueNumber
-                          }).then((isClosed) =>
+                        Promise<IssuePayload | undefined>
+                      >(([reference, owner, repo, type, issueNumber]) =>
+                        issueIsClosed({
+                          owner,
+                          repo,
+                          issueNumber
+                        }).then(
+                          (isClosed): Promise<IssuePayload | undefined> =>
                             !isClosed
-                              ? Promise.resolve()
+                              ? undefined
                               : issueExists(reference).then((exists: boolean) =>
                                   !exists
-                                    ? createIssue({
-                                        owner: thisOwner,
-                                        repo: thisRepo,
-                                        labels,
-                                        title: issueTitle(reference),
-                                        body: issueBody(
-                                          reference,
-                                          type,
-                                          thisOwner,
-                                          thisRepo,
-                                          path.relative(directory, filePath)
+                                    ? {
+                                        reference,
+                                        type,
+                                        relativePath: path.relative(
+                                          directory,
+                                          filePath
                                         )
-                                      })
-                                    : Promise.resolve()
+                                      }
+                                    : undefined
                                 )
-                          )
+                        )
                       )
                     )
                 )
-        )
+              ],
+        []
       )
     )
-    .catch(exitWithReason)
+      .then((issues) => issues.flat(1).filter((i) => i))
+      .then((issues) =>
+        issues.length > issueLimit
+          ? exitWithReason(`Found too many closed references (${issues.length}):
+
+I would create too many issues, here they are:
+
+${JSON.stringify(issues)}
+
+To still create them, please raise the limit temporarily
+`)
+          : issues.forEach(({ relativePath, reference, type }) =>
+              createIssue({
+                owner: thisOwner,
+                repo: thisRepo,
+                labels,
+                title: issueTitle(reference),
+                body: issueBody(
+                  reference,
+                  type,
+                  thisOwner,
+                  thisRepo,
+                  relativePath
+                )
+              })
+            )
+      )
+      .catch(exitWithReason)
+  )
 
 export default mainRunner

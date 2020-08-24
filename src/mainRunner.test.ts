@@ -8,16 +8,17 @@ import { Octokit } from '@octokit/rest'
 const mockDependencies = ({
   issueExists,
   referenceClosed,
-  path
+  path,
+  issueLimit = 10
 }: {
   issueExists: boolean
   referenceClosed: boolean
   path: string
+  issueLimit?: number
 }) => ({
-  createIssue: jest.fn<
-    Promise<void>,
-    [Octokit.IssuesCreateParamsDeprecatedAssignee]
-  >(() => Promise.resolve()),
+  createIssue: jest.fn<Promise<void>, [Octokit.IssuesCreateParams]>(() =>
+    Promise.resolve()
+  ),
   issueExists: jest.fn<Promise<boolean>, [string]>(() =>
     Promise.resolve(issueExists)
   ),
@@ -39,6 +40,7 @@ const mockDependencies = ({
   ignorePaths: [] as string[],
   thisOwner: 'thisOwner',
   thisRepo: 'thisRepo',
+  issueLimit,
   readFile: jest.fn(fs.promises.readFile),
   directory: path
 })
@@ -82,6 +84,14 @@ const expectCreated = (
       createdIssuesWith.find((title) => title.indexOf(ref) >= 0)
     ).toBeTruthy()
   })
+}
+
+const expectFail = (
+  deps: ReturnType<typeof mockDependencies>,
+  partialMessage: string
+) => {
+  expect(deps.exitWithReason).toBeCalledTimes(1)
+  expect(deps.exitWithReason.mock.calls[0][0]).toContain(partialMessage)
 }
 
 describe('mainRunner works', () => {
@@ -158,6 +168,37 @@ describe('mainRunner works', () => {
       issueExists: true,
       referenceClosed: false,
       path: dir
+    })
+    await mainRunner(deps)
+
+    expectCreated(
+      deps,
+      [],
+      [
+        'github.com/testUser/testRepo/pull/42',
+        'github.com/testUser/testRepo/issues/1337'
+      ]
+    )
+  })
+
+  it('should not create issues when there are more open references than the limit', async () => {
+    const deps = mockDependencies({
+      issueExists: false,
+      referenceClosed: true,
+      path: dir,
+      issueLimit: 1
+    })
+    await mainRunner(deps)
+
+    expectFail(deps, 'too many closed references')
+  })
+
+  it('should not fail when there are more closed references than the limit', async () => {
+    const deps = mockDependencies({
+      issueExists: false,
+      referenceClosed: false,
+      path: dir,
+      issueLimit: 1
     })
     await mainRunner(deps)
 

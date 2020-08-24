@@ -36,6 +36,7 @@ npx closed-reference-notifier <dir> <ignore>
       process.exit(1)
     },
     labels: [],
-    readFile: fs.promises.readFile
+    readFile: fs.promises.readFile,
+    issueLimit: Number.POSITIVE_INFINITY
   })
 })()

@@ -32,9 +32,7 @@ export const issueBody = (
 ) =>
   `The upstream [${type}](https://${upstreamReference}) got closed. I found the reference in [this file](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}).`
 
-export const createIssue = (
-  params: Octokit.IssuesCreateParamsDeprecatedAssignee
-) =>
+export const createIssue = (params: Octokit.IssuesCreateParams) =>
   getClient()
     .issues.create(params)
     .then(() => Promise.resolve())

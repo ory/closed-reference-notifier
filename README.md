@@ -24,17 +24,21 @@ you have to set the token input (see below).
 
 All other inputs are optional.
 
-Key | Description | Default value
---- | --- | ---
-ignore | ignore paths, comma seperated list of .gitignore style entries | .git
-issueLabels | the labels to create issues with, comma seperated list | closed reference
+| Key         | Description                                                    | Default value    |
+| ----------- | -------------------------------------------------------------- | ---------------- |
+| ignore      | ignore paths, comma seperated list of .gitignore style entries | .git             |
+| issueLabels | the labels to create issues with, comma seperated list         | closed reference |
+| issueLimit  | the maximum number of issues to create, supposed to catch bugs | 5                |
+
+Note that the action fails when there are more issues to be created than the limit allows. This is because GitHub Actions
+do not have manual approval.
 
 Verbose example with all inputs:
 
 ```yaml
 on:
   schedule:
-  - cron: '0 7 * * *'
+    - cron: '0 7 * * *'
 
 jobs:
   find_closed_references:
@@ -47,6 +51,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ignore: .git
           issueLabels: closed reference
+          issueLimit: 5
 ```
 
 ## Testing manually before automating
