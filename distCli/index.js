@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(514);
+/******/ 		return __webpack_require__(522);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -8027,46 +8027,60 @@ function addHook (state, kind, name, hook) {
 
 /***/ }),
 
-/***/ 514:
+/***/ 522:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-// Copyright © 2020 Patrik Neu, Ory Corp patrik@ory.sh
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = __webpack_require__(470);
-const fs_1 = __importDefault(__webpack_require__(747));
-const path_1 = __importDefault(__webpack_require__(622));
-const helpers_1 = __importDefault(__webpack_require__(872));
 const mainRunner_1 = __importDefault(__webpack_require__(66));
-const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
+const helpers_1 = __webpack_require__(872);
+const fs = __importStar(__webpack_require__(747));
+switch (process.argv[2]) {
+    case '-help':
+    case '-h':
+    case '--help':
+        console.log(`Usage:
+npx closed-reference-notifier <dir> <ignore>
+
+<dir>:    the directory to traverse
+<ignore>: comma separated list of gitignore style entries to ignore
+`);
+        process.exit(0);
+}
+;
 (async () => {
     await mainRunner_1.default({
-        ...helpers_1.default,
-        readFile: fs_1.default.promises.readFile,
-        thisOwner,
-        thisRepo,
-        labels: core_1.getInput('issueLabels').split(','),
-        ignorePaths: core_1.getInput('ignore')
-            .split(',')
-            .map((path) => path_1.default.resolve(path_1.default.join('.', path))),
-        directory: '.',
-        issueLimit: parseInt(core_1.getInput('issueLimit')) || 5
+        thisRepo: '',
+        thisOwner: '',
+        issueExists: () => Promise.resolve(false),
+        issueTitle: () => '',
+        issueBody: (ref, type, thisOwner, thisRepo, file) => `Found reference "${ref}" in file ${file}`,
+        issueIsClosed: () => Promise.resolve(true),
+        ignorePaths: process.argv[3] ? process.argv[3].split(',') : [],
+        createIssue: (issue) => {
+            console.log(issue.body);
+            return Promise.resolve();
+        },
+        shouldIgnore: helpers_1.shouldIgnore,
+        directory: process.argv[2],
+        exitWithReason: (err) => {
+            console.log('unexpected error:', err);
+            process.exit(1);
+        },
+        labels: [],
+        readFile: fs.promises.readFile,
+        issueLimit: Number.POSITIVE_INFINITY
     });
 })();
 
