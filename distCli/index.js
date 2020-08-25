@@ -537,7 +537,7 @@ const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, iss
 
 I would create too many issues, here they are:
 
-${JSON.stringify(issues)}
+${JSON.stringify(issues, null, 2)}
 
 To still create them, please raise the limit temporarily, e.g. by manually triggering the workflow (see https://github.com/ory/closed-reference-notifier#manual-workflow-trigger).
 `)
