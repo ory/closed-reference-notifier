@@ -63,3 +63,28 @@ To manually test what references this action finds you can run
 ```
 $ npx https://github.com/ory/closed-reference-notifier.git local/path/to/repo ignore,list
 ```
+
+## Manual workflow trigger
+
+To allow for easy temporary issue limit raising, we recommend you add the following manual trigger:
+
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      issueLimit:
+        description: maximum number of issues to create
+        required: true
+        default: '5'
+
+jobs:
+  find_closed_references:
+    runs-on: ubuntu-latest
+    name: Find closed references
+    steps:
+    - uses: ory/closed-reference-notifier@v1.0.1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        # fall back to 5 when the issueLimit is not available (e.g. with a scheduled event)
+        issueLimit: ${{ github.event.inputs.issueLimit || '5' }}
+```

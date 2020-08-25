@@ -76,14 +76,16 @@ export const issueIsClosed = ({
   owner: string
   repo: string
   issueNumber: string
-}) =>
-  getClient()
-    .issues.get({
-      owner,
-      repo,
-      issue_number: parseInt(issueNumber)
+}) => {
+    console.log(`found reference to ${owner}/${repo}#${issueNumber}`)
+    return getClient()
+        .issues.get({
+        owner,
+        repo,
+        issue_number: parseInt(issueNumber)
     })
-    .then((issue) => Promise.resolve(issue.data.state == 'closed'))
+        .then((issue) => Promise.resolve(issue.data.state == 'closed'))
+}
 
 export default {
   issueExists,
