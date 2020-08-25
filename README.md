@@ -82,9 +82,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Find closed references
     steps:
-    - uses: ory/closed-reference-notifier@v1.0.1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        # fall back to 5 when the issueLimit is not available (e.g. with a scheduled event)
-        issueLimit: ${{ github.event.inputs.issueLimit || '5' }}
+      - uses: ory/closed-reference-notifier@v1.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # fall back to 5 when the issueLimit is not available (e.g. with a scheduled event)
+          issueLimit: ${{ github.event.inputs.issueLimit || '5' }}
 ```
