@@ -12,6 +12,10 @@ inputs:
     description: the labels to create issues with, comma seperated list
     required: false
     default: closed reference
+  issueLimit:
+    description: the maximum number of issues to create
+    required: false
+    default: '5'
 runs:
   using: node12
   main: distAction/index.js
