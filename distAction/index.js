@@ -538,7 +538,7 @@ I would create too many issues, here they are:
 
 ${JSON.stringify(issues)}
 
-To still create them, please raise the limit temporarily
+To still create them, please raise the limit temporarily, e.g. by manually triggering the workflow (see https://github.com/ory/closed-reference-notifier#manual-workflow-trigger).
 `)
     : issues.forEach(({ relativePath, reference, type }) => createIssue({
         owner: thisOwner,
@@ -24456,13 +24456,16 @@ exports.issueExists = (reference) => getClient()
   }
 }`)
     .then(({ search: { nodes } }) => Promise.resolve(nodes.length !== 0));
-exports.issueIsClosed = ({ owner, repo, issueNumber }) => getClient()
-    .issues.get({
-    owner,
-    repo,
-    issue_number: parseInt(issueNumber)
-})
-    .then((issue) => Promise.resolve(issue.data.state == 'closed'));
+exports.issueIsClosed = ({ owner, repo, issueNumber }) => {
+    console.log(`found reference to ${owner}/${repo}#${issueNumber}`);
+    return getClient()
+        .issues.get({
+        owner,
+        repo,
+        issue_number: parseInt(issueNumber)
+    })
+        .then((issue) => Promise.resolve(issue.data.state == 'closed'));
+};
 exports.default = {
     issueExists: exports.issueExists,
     exitWithReason: exports.exitWithReason,
