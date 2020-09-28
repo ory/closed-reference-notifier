@@ -29,10 +29,13 @@ export type Dependencies = typeof helpers & {
   issueLimit: number
 }
 
-type IssuePayload = {
-  relativePath: string
+export type Reference = {
   reference: string
+  owner: string
+  repo: string
   type: string
+  issueNumber: string
+  foundIn: [string, number][]
 }
 
 const mainRunner = ({
@@ -53,9 +56,9 @@ const mainRunner = ({
 }: Dependencies) =>
   walkdir.async(directory, { return_object: true }).then((files) =>
     Promise.all(
-      Object.entries(files).reduce<Promise<IssuePayload[]>[]>(
+      Object.entries(files).reduce<Promise<Reference[]>[]>(
         (
-          allIssues: Promise<IssuePayload[]>[],
+          allIssues: Promise<Reference[]>[],
           [filePath, stats]: [string, fs.Stats]
         ) =>
           stats.isDirectory() ||
@@ -63,64 +66,82 @@ const mainRunner = ({
             ? allIssues
             : [
                 ...allIssues,
-                readFile(filePath).then<IssuePayload[]>(
-                  (data): Promise<IssuePayload[]> =>
-                    Promise.all(
-                      Array.from(data.toString().matchAll(referenceRegex)).map<
-                        Promise<IssuePayload | undefined>
-                      >(([reference, owner, repo, type, issueNumber]) =>
-                        issueIsClosed({
-                          owner,
-                          repo,
-                          issueNumber
-                        }).then(
-                          (isClosed): Promise<IssuePayload | undefined> =>
-                            !isClosed
-                              ? undefined
-                              : issueExists(reference).then((exists: boolean) =>
-                                  !exists
-                                    ? {
-                                        reference,
-                                        type,
-                                        relativePath: path.relative(
-                                          directory,
-                                          filePath
-                                        )
-                                      }
-                                    : undefined
-                                )
-                        )
-                      )
-                    )
+                readFile(filePath).then<Reference[]>((data): Reference[] =>
+                  Array.from(data.toString().matchAll(referenceRegex)).map<
+                    Reference
+                  >((match) => ({
+                    reference: match[0],
+                    owner: match[1],
+                    repo: match[2],
+                    type: match[3],
+                    issueNumber: match[4],
+                    foundIn: [
+                      [
+                        path.relative(directory, filePath),
+                        data.toString().substr(0, match.index).split('\n')
+                          .length
+                      ]
+                    ]
+                  }))
                 )
               ],
         []
       )
     )
-      .then((issues) => issues.flat(1).filter((i) => i))
-      .then((issues) =>
-        issues.length > issueLimit
-          ? exitWithReason(`Found too many closed references (${issues.length}):
+      .then((references) =>
+        references
+          .flat(1)
+          // reduce filters all duplicates but adds their foundIn to the kept instance
+          .reduce<Reference[]>(
+            (all, ref, i) =>
+              all
+                .find((v) => v.reference === ref.reference)
+                ?.foundIn.push(ref.foundIn[0]) === undefined
+                ? [...all, ref]
+                : all,
+            []
+          )
+      )
+      .then((references) =>
+        Promise.all(
+          references.map<Promise<Reference | undefined>>((ref) =>
+            issueIsClosed(ref).then((closed) => (closed ? ref : undefined))
+          )
+        ).then((references) =>
+          Promise.all(
+            references.map<Promise<Reference | undefined>>(
+              (ref): Promise<Reference | undefined> =>
+                ref &&
+                issueExists(ref.reference).then((exists) =>
+                  !exists ? ref : undefined
+                )
+            )
+          ).then((references) =>
+            references.filter<Reference>(
+              (ref: Reference | undefined): ref is Reference => !!ref
+            )
+          )
+        )
+      )
+      .then((references) =>
+        references.length > issueLimit
+          ? exitWithReason(`Found too many closed references (${
+              references.length
+            }):
 
 I would create too many issues, here they are:
 
-${JSON.stringify(issues, null, 2)}
+${JSON.stringify(references, null, 2)}
 
 To still create them, please raise the limit temporarily, e.g. by manually triggering the workflow (see https://github.com/ory/closed-reference-notifier#manual-workflow-trigger).
 `)
-          : issues.forEach(({ relativePath, reference, type }) =>
+          : references.forEach(({ foundIn, reference, type }) =>
               createIssue({
                 owner: thisOwner,
                 repo: thisRepo,
                 labels,
                 title: issueTitle(reference),
-                body: issueBody(
-                  reference,
-                  type,
-                  thisOwner,
-                  thisRepo,
-                  relativePath
-                )
+                body: issueBody(reference, type, thisOwner, thisRepo, foundIn)
               })
             )
       )

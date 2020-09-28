@@ -16,6 +16,7 @@ import { getInput, setFailed } from '@actions/core'
 import { GitHub } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import ignore, { Ignore } from 'ignore'
+import { Reference } from './mainRunner'
 
 let client: GitHub
 const getClient = () => client || (client = new GitHub(getInput('token')))
@@ -28,9 +29,12 @@ export const issueBody = (
   type: string,
   thisOwner: string,
   thisRepo: string,
-  file: string
+  foundIn: Reference['foundIn']
 ) =>
-  `The upstream [${type}](https://${upstreamReference}) got closed. I found the reference in [this file](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}).`
+  `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in: ${foundIn.map(
+    ([file, line]) =>
+      `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`
+  )}`
 
 export const createIssue = (params: Octokit.IssuesCreateParams) =>
   getClient()
@@ -68,23 +72,20 @@ export const issueExists = (reference: string) =>
       }) => Promise.resolve(nodes.length !== 0)
     )
 
-export const issueIsClosed = ({
-  owner,
-  repo,
-  issueNumber
-}: {
-  owner: string
-  repo: string
-  issueNumber: string
-}) => {
-  console.log(`found reference to ${owner}/${repo}#${issueNumber}`)
+export const issueIsClosed = (reference: Reference): Promise<boolean> => {
+  const { owner, repo, issueNumber, foundIn } = reference
+  console.log(
+    `found reference to ${owner}/${repo}#${issueNumber} in\n${foundIn.map(
+      ([file, line]) => `  ${file}#${line}\n`
+    )}`
+  )
   return getClient()
     .issues.get({
       owner,
       repo,
       issue_number: parseInt(issueNumber)
     })
-    .then((issue) => Promise.resolve(issue.data.state == 'closed'))
+    .then((issue) => issue.data.state === 'closed')
 }
 
 export default {
