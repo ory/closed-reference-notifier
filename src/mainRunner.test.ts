@@ -1,4 +1,4 @@
-import mainRunner from './mainRunner'
+import mainRunner, { Reference } from './mainRunner'
 import { issueBody, issueTitle, shouldIgnore } from './helpers'
 import fs from 'fs'
 import path from 'path'
@@ -26,16 +26,9 @@ const mockDependencies = ({
   issueBody: jest.fn(issueBody),
   shouldIgnore: jest.fn(shouldIgnore),
   exitWithReason: jest.fn<void, any>(),
-  issueIsClosed: jest.fn<
-    Promise<boolean>,
-    [
-      {
-        owner: string
-        repo: string
-        issueNumber: string
-      }
-    ]
-  >(() => Promise.resolve(referenceClosed)),
+  issueIsClosed: jest.fn<Promise<boolean>, [Reference]>(() =>
+    Promise.resolve(referenceClosed)
+  ),
   labels: [] as string[],
   ignorePaths: [] as string[],
   thisOwner: 'thisOwner',
@@ -210,5 +203,32 @@ describe('mainRunner works', () => {
         'github.com/testUser/testRepo/issues/1337'
       ]
     )
+  })
+
+  it('should accumulate multiple instances of the same reference', async () => {
+    const deps = mockDependencies({
+      issueExists: false,
+      referenceClosed: true,
+      path: dir,
+      issueLimit: 2
+    })
+    await createFiles(dir, {
+      'bar.txt': 'github.com/testUser/testRepo/pull/42'
+    })
+    await mainRunner(deps)
+
+    expectCreated(
+      deps,
+      [
+        'github.com/testUser/testRepo/pull/42',
+        'github.com/testUser/testRepo/issues/1337'
+      ],
+      []
+    )
+
+    expect(deps.issueBody.mock.calls[0][4]).toStrictEqual([
+      ['bar.txt', 1],
+      ['foo.txt', 1]
+    ])
   })
 })
