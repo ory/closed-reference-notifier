@@ -28,8 +28,8 @@ const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
     thisRepo,
     labels: getInput('issueLabels').split(','),
     ignorePaths: getInput('ignore')
-      .split(',')
-      .map((path) => nodePath.resolve(nodePath.join('.', path))),
+      .split(','),
+      // .map((path) => nodePath.resolve(nodePath.join('.', path))),
     directory: '.',
     issueLimit: parseInt(getInput('issueLimit')) || 5
   })
