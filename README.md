@@ -32,7 +32,7 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '14'
-      - uses: ory/closed-reference-notifier@v1.0.0
+      - uses: ory/closed-reference-notifier@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -64,7 +64,10 @@ jobs:
     name: Find closed references
     steps:
       - uses: actions/checkout@v2
-      - uses: ory/closed-reference-notifier@v1.0.0
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '14'
+      - uses: ory/closed-reference-notifier@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ignore: .git
@@ -100,7 +103,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Find closed references
     steps:
-      - uses: ory/closed-reference-notifier@v1.0.1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '14'
+      - uses: ory/closed-reference-notifier@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # fall back to 5 when the issueLimit is not available (e.g. with a scheduled event)
