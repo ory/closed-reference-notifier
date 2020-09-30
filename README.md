@@ -19,6 +19,24 @@ That way you will automatically be reminded to check back on the reference.
 
 ## Configuration
 
+Please note that this action has to run on node.js 14, which is currently only possible using a workaround.
+Therefore, you have to make sure this action runs on a sufficient node version, e.g. by using this minimal job config:
+
+```yaml
+jobs:
+  find_closed_references:
+    runs-on: ubuntu-latest
+    name: Find closed references
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '14'
+      - uses: ory/closed-reference-notifier@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+```
+
 We recommend having this action run regularly e.g. daily. To enable access to the GitHub API
 you have to set the token input (see below).
 
