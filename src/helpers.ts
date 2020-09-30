@@ -42,8 +42,11 @@ export const createIssue = (params: Octokit.IssuesCreateParams) =>
     .then(() => Promise.resolve())
 
 let ignoreCached: Ignore
-export const shouldIgnore = (ignorePaths: Array<string>, relPath: string) =>
-  (ignoreCached || (ignoreCached = ignore().add(ignorePaths))).ignores(relPath)
+export const shouldIgnore = (ignorePaths: Array<string>, relPath: string) => {
+  const i = (ignoreCached || (ignoreCached = ignore().add(ignorePaths))).ignores(relPath)
+  console.log(ignorePaths, relPath, i)
+  return i
+}
 
 export const exitWithReason = (r: any) => {
   console.log(r)
