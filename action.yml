@@ -19,11 +19,17 @@ inputs:
 runs:
   using: composite
   steps:
+#    requires actions within actions as tracked in https://github.com/actions/runner/issues/646
 #    - uses: actions/setup-node@v2-beta
 #      with:
 #        node-version: '14'
     - run: node ${{ github.action_path }}/distAction/index.js
       shell: bash
+      env:
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_IGNORE: ${{ inputs.ignore }}
+        INPUT_ISSUELABELS: ${{ inputs.issueLabels }}
+        INPUT_ISSUELIMIT: ${{ inputs.issueLimit }}
 branding:
   color: red
   icon: hash
