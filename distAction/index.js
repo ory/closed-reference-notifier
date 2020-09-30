@@ -25989,7 +25989,11 @@ exports.createIssue = (params) => getClient()
     .issues.create(params)
     .then(() => Promise.resolve());
 let ignoreCached;
-exports.shouldIgnore = (ignorePaths, relPath) => (ignoreCached || (ignoreCached = ignore_1.default().add(ignorePaths))).ignores(relPath);
+exports.shouldIgnore = (ignorePaths, relPath) => {
+    const i = (ignoreCached || (ignoreCached = ignore_1.default().add(ignorePaths))).ignores(relPath);
+    console.log(ignorePaths, relPath, i);
+    return i;
+};
 exports.exitWithReason = (r) => {
     console.log(r);
     core_1.setFailed(JSON.stringify(r));
@@ -26131,7 +26135,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(2186);
 const fs_1 = __importDefault(__webpack_require__(5747));
-const path_1 = __importDefault(__webpack_require__(5622));
 const helpers_1 = __importDefault(__webpack_require__(3015));
 const mainRunner_1 = __importDefault(__webpack_require__(2765));
 const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
@@ -26143,8 +26146,8 @@ const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
         thisRepo,
         labels: core_1.getInput('issueLabels').split(','),
         ignorePaths: core_1.getInput('ignore')
-            .split(',')
-            .map((path) => path_1.default.resolve(path_1.default.join('.', path))),
+            .split(','),
+        // .map((path) => nodePath.resolve(nodePath.join('.', path))),
         directory: '.',
         issueLimit: parseInt(core_1.getInput('issueLimit')) || 5
     });
