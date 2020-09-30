@@ -19,16 +19,11 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v2-beta
-      with:
-        node-version: '14'
+#    - uses: actions/setup-node@v2-beta
+#      with:
+#        node-version: '14'
     - run: node ${{ github.action_path }}/distAction/index.js
       shell: bash
-      with:
-        token: ${{ inputs.token }}
-        ignore: ${{ inputs.ignore }}
-        issueLabels: ${{ inputs.issueLabels }}
-        issueLimit: ${{ inputs.issueLimit }}
 branding:
   color: red
   icon: hash
