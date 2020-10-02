@@ -14,8 +14,7 @@
 
 import { getInput } from '@actions/core'
 import fs from 'fs'
-import nodePath from 'path'
-import helpers from './helpers'
+import helpers, { readIgnoreFiles } from './helpers'
 import mainRunner from './mainRunner'
 
 const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
@@ -27,7 +26,10 @@ const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
     thisOwner,
     thisRepo,
     labels: getInput('issueLabels').split(','),
-    ignorePaths: getInput('ignore').split(','),
+    ignorePaths: [
+      ...getInput('ignore').split(','),
+      ...(await readIgnoreFiles())
+    ],
     directory: '.',
     issueLimit: parseInt(getInput('issueLimit')) || 5
   })

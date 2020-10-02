@@ -17,6 +17,8 @@ import { GitHub } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import ignore, { Ignore } from 'ignore'
 import { Reference } from './mainRunner'
+import * as fs from 'fs'
+import * as path from 'path'
 
 let client: GitHub
 const getClient = () => client || (client = new GitHub(getInput('token')))
@@ -31,10 +33,13 @@ export const issueBody = (
   thisRepo: string,
   foundIn: Reference['foundIn']
 ) =>
-  `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in: ${foundIn.map(
-    ([file, line]) =>
-      `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`
-  )}`
+  `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
+- [ ] ${foundIn
+    .map(
+      ([file, line]) =>
+        `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`
+    )
+    .join('\n- [ ] ')}`
 
 export const createIssue = (params: Octokit.IssuesCreateParams) =>
   getClient()
@@ -87,6 +92,21 @@ export const issueIsClosed = (reference: Reference): Promise<boolean> => {
     })
     .then((issue) => issue.data.state === 'closed')
 }
+
+export const readIgnoreFiles = (dir: string = '.'): Promise<string[]> =>
+  Promise.allSettled(
+    ['.reference-ignore', '.gitignore'].map((fn) =>
+      fs.promises.readFile(path.join(dir, fn))
+    )
+  ).then((files) =>
+    files
+      .filter<PromiseFulfilledResult<Buffer>>(
+        (file): file is PromiseFulfilledResult<Buffer> =>
+          file.status === 'fulfilled'
+      )
+      .map((fulFilled) => fulFilled.value.toString().split('\n'))
+      .flat(1)
+  )
 
 export default {
   issueExists,
