@@ -26076,18 +26076,43 @@ function wrappy (fn, cb) {
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.issueIsClosed = exports.issueExists = exports.exitWithReason = exports.shouldIgnore = exports.createIssue = exports.issueBody = exports.issueTitle = void 0;
+exports.readIgnoreFiles = exports.issueIsClosed = exports.issueExists = exports.exitWithReason = exports.shouldIgnore = exports.createIssue = exports.issueBody = exports.issueTitle = void 0;
 const core_1 = __webpack_require__(2186);
 const github_1 = __webpack_require__(5438);
 const ignore_1 = __importDefault(__webpack_require__(1230));
+const fs = __importStar(__webpack_require__(5747));
+const path = __importStar(__webpack_require__(5622));
 let client;
 const getClient = () => client || (client = new github_1.GitHub(core_1.getInput('token')));
 exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
-exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in: ${foundIn.map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`)}`;
+exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
+- [ ] ${foundIn
+    .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`)
+    .join('
+- [ ] ')}`;
 exports.createIssue = (params) => getClient()
     .issues.create(params)
     .then(() => Promise.resolve());
@@ -26122,6 +26147,11 @@ ${foundIn.map(([file, line]) => `  ${file}#${line}
     })
         .then((issue) => issue.data.state === 'closed');
 };
+exports.readIgnoreFiles = (dir = '.') => Promise.allSettled(['.reference-ignore', '.gitignore'].map((fn) => fs.promises.readFile(path.join(dir, fn)))).then((files) => files
+    .filter((file) => file.status === 'fulfilled')
+    .map((fulFilled) => fulFilled.value.toString().split('
+'))
+    .flat(1));
 exports.default = {
     issueExists: exports.issueExists,
     exitWithReason: exports.exitWithReason,
@@ -26159,7 +26189,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const walkdir_1 = __importDefault(__webpack_require__(5200));
 const path_1 = __importDefault(__webpack_require__(5622));
-const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm;
+const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)/gm;
 const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, labels, thisOwner, thisRepo, readFile, ignorePaths, issueIsClosed, directory, issueBody, issueLimit }) => walkdir_1.default.async(directory, { return_object: true }).then((files) => Promise.all(Object.entries(files).reduce((allIssues, [filePath, stats]) => stats.isDirectory() ||
     shouldIgnore(ignorePaths, path_1.default.relative(directory, filePath))
     ? allIssues
@@ -26218,33 +26248,15 @@ exports.default = mainRunner;
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const mainRunner_1 = __importDefault(__webpack_require__(2765));
 const helpers_1 = __webpack_require__(3015);
-const fs = __importStar(__webpack_require__(5747));
-switch (process.argv[2]) {
+const fs_1 = __importDefault(__webpack_require__(5747));
+const [dir = '-h', ignore = '.git'] = process.argv.slice(2);
+switch (dir) {
     case '-help':
     case '-h':
     case '--help':
@@ -26252,7 +26264,7 @@ switch (process.argv[2]) {
 npx closed-reference-notifier <dir> <ignore>
 
 <dir>:    the directory to traverse
-<ignore>: comma separated list of gitignore style entries to ignore
+<ignore>: comma separated list of gitignore style entries to ignore, defaults to '.git'
 `);
         process.exit(0);
 }
@@ -26263,21 +26275,23 @@ npx closed-reference-notifier <dir> <ignore>
         thisOwner: '',
         issueExists: () => Promise.resolve(false),
         issueTitle: () => '',
-        issueBody: (ref, type, thisOwner, thisRepo, file) => `Found reference "${ref}" in file ${file}`,
+        issueBody: (ref, type, thisOwner, thisRepo, files) => `Found reference "${ref}" in files
+  ${files.map((file) => file.join('#')).join('
+  ')}`,
         issueIsClosed: () => Promise.resolve(true),
-        ignorePaths: process.argv[3] ? process.argv[3].split(',') : [],
+        ignorePaths: [...ignore.split(','), ...(await helpers_1.readIgnoreFiles(dir))],
         createIssue: (issue) => {
             console.log(issue.body);
             return Promise.resolve();
         },
         shouldIgnore: helpers_1.shouldIgnore,
-        directory: process.argv[2],
+        directory: dir,
         exitWithReason: (err) => {
             console.log('unexpected error:', err);
             process.exit(1);
         },
         labels: [],
-        readFile: fs.promises.readFile,
+        readFile: fs_1.default.promises.readFile,
         issueLimit: Number.POSITIVE_INFINITY
     });
 })();
