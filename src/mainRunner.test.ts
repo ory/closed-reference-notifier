@@ -39,19 +39,20 @@ const mockDependencies = ({
 })
 
 const createFiles = (dirPath: string, files: { [path: string]: string }) =>
-  Promise.all(
-    Object.entries(files).map(([name, data]) =>
-      fs.promises
-        .mkdir(path.dirname(path.join(dirPath, name)), { recursive: true })
-        .then(() => fs.promises.writeFile(path.join(dirPath, name), data))
-    )
-  )
+  Object.entries(files).forEach(([name, data]) => {
+    const filePath = path.join(dirPath, name)
+    fs.mkdirSync(path.dirname(filePath), { recursive: true })
+    fs.writeFileSync(filePath, data)
+  })
 
 const expectCreated = (
   deps: ReturnType<typeof mockDependencies>,
   created: string[],
   notCreated: string[]
 ) => {
+  if (deps.exitWithReason.mock.calls.length != 0) {
+    console.log(deps.exitWithReason.mock.calls)
+  }
   expect(deps.exitWithReason).toBeCalledTimes(0)
   expect(deps.createIssue).toBeCalledTimes(created.length)
   expect(deps.issueIsClosed).toBeCalledTimes(created.length + notCreated.length)
@@ -90,16 +91,16 @@ const expectFail = (
 describe('mainRunner works', () => {
   let dir: string
 
-  beforeEach(async () => {
-    await fs.promises.mkdtemp('test').then((path) => (dir = path))
-    await createFiles(dir, {
+  beforeEach(() => {
+    dir = fs.mkdtempSync('test')
+    createFiles(dir, {
       'src/index.js': 'github.com/testUser/testRepo/issues/1337',
       'foo.txt': 'github.com/testUser/testRepo/pull/42'
     })
   })
 
-  afterEach(async () => {
-    await fs.promises.rmdir(dir, { recursive: true })
+  afterEach(() => {
+    fs.rmdirSync(dir, { recursive: true })
   })
 
   it('should create issues for closed references', async () => {
@@ -212,7 +213,7 @@ describe('mainRunner works', () => {
       path: dir,
       issueLimit: 2
     })
-    await createFiles(dir, {
+    createFiles(dir, {
       'bar.txt': 'github.com/testUser/testRepo/pull/42'
     })
     await mainRunner(deps)
@@ -230,5 +231,30 @@ describe('mainRunner works', () => {
       ['bar.txt', 1],
       ['foo.txt', 1]
     ])
+  })
+
+  it('should find multiple references in one file', async () => {
+    const deps = mockDependencies({
+      issueExists: false,
+      referenceClosed: true,
+      path: dir,
+      issueLimit: 4
+    })
+    createFiles(dir, {
+      'bar.txt':
+        'github.com/testUser/testRepo/pull/420\ngithub.com/ory/closed-reference-notifier/issues/13'
+    })
+    await mainRunner(deps)
+
+    expectCreated(
+      deps,
+      [
+        'github.com/testUser/testRepo/pull/42',
+        'github.com/testUser/testRepo/issues/1337',
+        'github.com/testUser/testRepo/pull/420',
+        'github.com/ory/closed-reference-notifier/issues/13'
+      ],
+      []
+    )
   })
 })

@@ -48,6 +48,9 @@ All other inputs are optional.
 | issueLabels | the labels to create issues with, comma seperated list         | closed reference |
 | issueLimit  | the maximum number of issues to create, supposed to catch bugs | 5                |
 
+Additionally to setting `ignore` as an input, you can also place a `.reference-ignore` file in the root of your repo (entries should be `\n` separated).
+Both, the input and the file will be concatenated.
+
 Note that the action fails when there are more issues to be created than the limit allows. This is because GitHub Actions
 do not have manual approval.
 

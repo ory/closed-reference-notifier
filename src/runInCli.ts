@@ -1,8 +1,10 @@
 import mainRunner from './mainRunner'
-import { shouldIgnore } from './helpers'
-import * as fs from 'fs'
+import { readIgnoreFiles, shouldIgnore } from './helpers'
+import fs from 'fs'
 
-switch (process.argv[2]) {
+const [dir = '-h', ignore = '.git'] = process.argv.slice(2)
+
+switch (dir) {
   case '-help':
   case '-h':
   case '--help':
@@ -10,7 +12,7 @@ switch (process.argv[2]) {
 npx closed-reference-notifier <dir> <ignore>
 
 <dir>:    the directory to traverse
-<ignore>: comma separated list of gitignore style entries to ignore
+<ignore>: comma separated list of gitignore style entries to ignore, defaults to '.git'
 `)
     process.exit(0)
 }
@@ -21,16 +23,17 @@ npx closed-reference-notifier <dir> <ignore>
     thisOwner: '',
     issueExists: () => Promise.resolve(false),
     issueTitle: () => '',
-    issueBody: (ref, type, thisOwner, thisRepo, file) =>
-      `Found reference "${ref}" in file ${file}`,
+    issueBody: (ref, type, thisOwner, thisRepo, files) =>
+      `Found reference "${ref}" in files
+  ${files.map((file) => file.join('#')).join('\n  ')}`,
     issueIsClosed: () => Promise.resolve(true),
-    ignorePaths: process.argv[3] ? process.argv[3].split(',') : [],
+    ignorePaths: [...ignore.split(','), ...(await readIgnoreFiles(dir))],
     createIssue: (issue) => {
       console.log(issue.body)
       return Promise.resolve()
     },
     shouldIgnore,
-    directory: process.argv[2],
+    directory: dir,
     exitWithReason: (err: any) => {
       console.log('unexpected error:', err)
       process.exit(1)

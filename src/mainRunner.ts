@@ -17,7 +17,7 @@ import fs from 'fs'
 import walkdir from 'walkdir'
 import path from 'path'
 
-const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d.-_]+)\/(pull|issues)\/(\d+)/gm
+const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)/gm
 
 export type Dependencies = typeof helpers & {
   labels: Array<string>
