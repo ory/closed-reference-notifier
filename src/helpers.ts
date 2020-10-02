@@ -34,10 +34,12 @@ export const issueBody = (
   foundIn: Reference['foundIn']
 ) =>
   `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
-- [ ] ${foundIn.map(
-    ([file, line]) =>
-      `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`
-  ).join('\n- [ ] ')}`
+- [ ] ${foundIn
+    .map(
+      ([file, line]) =>
+        `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`
+    )
+    .join('\n- [ ] ')}`
 
 export const createIssue = (params: Octokit.IssuesCreateParams) =>
   getClient()
