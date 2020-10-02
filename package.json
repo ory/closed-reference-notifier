@@ -34,7 +34,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@actions/core": "^1.2.3",
+    "@actions/core": "^1.2.6",
     "@actions/github": "^2.1.1",
     "ignore": "^5.1.4",
     "ory-prettier-styles": "^1.0.1",
