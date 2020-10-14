@@ -26100,7 +26100,9 @@ exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstre
 exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
 - [ ] ${foundIn
     .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`)
-    .join('\n- [ ] ')}`;
+    .join('\n- [ ] ')}
+
+This issue was created by the [ORY Closed Reference Notifier](https://github.com/ory/closed-reference-notifier) GitHub action.`;
 exports.createIssue = (params) => getClient()
     .issues.create(params)
     .then(() => Promise.resolve());

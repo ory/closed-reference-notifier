@@ -26112,7 +26112,9 @@ exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `
 - [ ] ${foundIn
     .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`)
     .join('
-- [ ] ')}`;
+- [ ] ')}
+
+This issue was created by the [ORY Closed Reference Notifier](https://github.com/ory/closed-reference-notifier) GitHub action.`;
 exports.createIssue = (params) => getClient()
     .issues.create(params)
     .then(() => Promise.resolve());
