@@ -39,7 +39,9 @@ export const issueBody = (
       ([file, line]) =>
         `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`
     )
-    .join('\n- [ ] ')}`
+    .join('\n- [ ] ')}
+
+This issue was created by the [ORY Closed Reference Notifier](https://github.com/ory/closed-reference-notifier) GitHub action.`
 
 export const createIssue = (params: Octokit.IssuesCreateParams) =>
   getClient()
