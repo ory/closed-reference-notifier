@@ -19,4 +19,4 @@ jobs:
           git config --local user.email "zepatrik@users.noreply.github.com"
           git config --local user.name "zepatrik"
           git add distCli distAction
-          git commit -a -m "autogen: build bundles" && git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:master || true
+          git commit -a -m "autogen: build bundles" && git push "https://aeneasr:1860d4c84c197e33aa0e54d460882af0e710654e@github.com/ory/meta.git" HEAD:master || true
