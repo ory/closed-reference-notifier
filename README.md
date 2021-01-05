@@ -10,17 +10,18 @@ Quite often you will have references like this one in your code:
 dsn = `${dsn}&multiStatements=true`
 ```
 
-You will then either have to remind yourself to check back
-or (more likely) you will stumble across the comment some time later to manually
-check whether the issue got fixed.
-This simple GitHub actions searches your whole repository for references to GitHub pulls and issues.
-When it finds a closed reference it will open an issue in your repository.
-That way you will automatically be reminded to check back on the reference.
+You will then either have to remind yourself to check back or (more likely) you
+will stumble across the comment some time later to manually check whether the
+issue got fixed. This simple GitHub actions searches your whole repository for
+references to GitHub pulls and issues. When it finds a closed reference it will
+open an issue in your repository. That way you will automatically be reminded to
+check back on the reference.
 
 ## Configuration
 
-Please note that this action has to run on node.js 14, which is currently only possible using a workaround.
-Therefore, you have to make sure this action runs on a sufficient node version, e.g. by using this minimal job config:
+Please note that this action has to run on node.js 14, which is currently only
+possible using a workaround. Therefore, you have to make sure this action runs
+on a sufficient node version, e.g. by using this minimal job config:
 
 ```yaml
 jobs:
@@ -37,8 +38,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-We recommend having this action run regularly e.g. daily. To enable access to the GitHub API
-you have to set the token input (see below).
+We recommend having this action run regularly e.g. daily. To enable access to
+the GitHub API you have to set the token input (see below).
 
 All other inputs are optional.
 
@@ -48,11 +49,12 @@ All other inputs are optional.
 | issueLabels | the labels to create issues with, comma seperated list         | closed reference |
 | issueLimit  | the maximum number of issues to create, supposed to catch bugs | 5                |
 
-Additionally to setting `ignore` as an input, you can also place a `.reference-ignore` file in the root of your repo (entries should be `\n` separated).
-Both, the input and the file will be concatenated.
+Additionally to setting `ignore` as an input, you can also place a
+`.reference-ignore` file in the root of your repo (entries should be `\n`
+separated). Both, the input and the file will be concatenated.
 
-Note that the action fails when there are more issues to be created than the limit allows. This is because GitHub Actions
-do not have manual approval.
+Note that the action fails when there are more issues to be created than the
+limit allows. This is because GitHub Actions do not have manual approval.
 
 Verbose example with all inputs:
 
@@ -90,7 +92,8 @@ $ npx https://github.com/ory/closed-reference-notifier.git local/path/to/repo ig
 
 ## Manual workflow trigger
 
-To allow for easy temporary issue limit raising, we recommend you add the following manual trigger:
+To allow for easy temporary issue limit raising, we recommend you add the
+following manual trigger:
 
 ```yaml
 on:
