@@ -19,12 +19,16 @@ import ignore, { Ignore } from 'ignore'
 import { Reference } from './mainRunner'
 import * as fs from 'fs'
 import * as path from 'path'
+import { execSync } from 'child_process'
 
 let client: GitHub
 const getClient = () => client || (client = new GitHub(getInput('token')))
 
 export const issueTitle = (upstreamReference: string) =>
   `upstream reference closed: ${upstreamReference}`
+
+const lastCommitHash = (file: string): string =>
+  execSync(`git log -n 1 --pretty=format:%H -- ${file}`).toString('utf-8')
 
 export const issueBody = (
   upstreamReference: string,
@@ -37,7 +41,9 @@ export const issueBody = (
 - [ ] ${foundIn
     .map(
       ([file, line]) =>
-        `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`
+        `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/${lastCommitHash(
+          file
+        )}/${file}#L${line})`
     )
     .join('\n- [ ] ')}
 

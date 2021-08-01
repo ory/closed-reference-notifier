@@ -1,4 +1,4 @@
--e #!/usr/bin/env node
+#!/usr/bin/env node
 module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
@@ -18064,7 +18064,7 @@ if (
 ) {
   /* eslint no-control-regex: "off" */
   const makePosix = str => /^\\\?\/.test(str)
-  || /["<>|\u0000-\u001F]+/u.test(str)
+  || /["<>| -]+/u.test(str)
     ? str
     : str.replace(/\/g, '/')
 
@@ -18354,10 +18354,10 @@ var funcTag = '[object Function]',
     symbolTag = '[object Symbol]';
 
 /** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!)[^\]|\.)*?)\]/,
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\]|\.)*?\1)\]/,
     reIsPlainProp = /^\w*$/,
     reLeadingDot = /^\./,
-    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!)[^\]|\.)*?))\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\]|\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
 /**
  * Used to match `RegExp`
@@ -19293,10 +19293,10 @@ var funcTag = '[object Function]',
     symbolTag = '[object Symbol]';
 
 /** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!)[^\]|\.)*?)\]/,
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\]|\.)*?\1)\]/,
     reIsPlainProp = /^\w*$/,
     reLeadingDot = /^\./,
-    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!)[^\]|\.)*?))\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\]|\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
 /**
  * Used to match `RegExp`
@@ -21283,7 +21283,7 @@ class Blob {
 		this[BUFFER] = Buffer.concat(buffers);
 
 		let type = options && options.type !== undefined && String(options.type).toLowerCase();
-		if (type && !/[^\u0020-\u007E]/.test(type)) {
+		if (type && !/[^ -~]/.test(type)) {
 			this[TYPE] = type;
 		}
 	}
@@ -21689,14 +21689,14 @@ function convertBody(buffer, headers) {
 
 	// html5
 	if (!res && str) {
-		res = /<meta.+?charset=(['"])(.+?)/i.exec(str);
+		res = /<meta.+?charset=(['"])(.+?)\1/i.exec(str);
 	}
 
 	// html4
 	if (!res && str) {
-		res = /<meta[\s]+?http-equiv=(['"])content-type[\s]+?content=(['"])(.+?)/i.exec(str);
+		res = /<meta[\s]+?http-equiv=(['"])content-type\1[\s]+?content=(['"])(.+?)\2/i.exec(str);
 		if (!res) {
-			res = /<meta[\s]+?content=(['"])(.+?)[\s]+?http-equiv=(['"])content-type/i.exec(str);
+			res = /<meta[\s]+?content=(['"])(.+?)\1[\s]+?http-equiv=(['"])content-type\3/i.exec(str);
 			if (res) {
 				res.pop(); // drop last quote
 			}
@@ -21709,7 +21709,7 @@ function convertBody(buffer, headers) {
 
 	// xml
 	if (!res && str) {
-		res = /<\?xml.+?encoding=(['"])(.+?)/i.exec(str);
+		res = /<\?xml.+?encoding=(['"])(.+?)\1/i.exec(str);
 	}
 
 	// found charset
@@ -21898,7 +21898,7 @@ Body.Promise = global.Promise;
  */
 
 const invalidTokenRegex = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
-const invalidHeaderCharRegex = /[^	\x20-\x7e\x80-\xff]/;
+const invalidHeaderCharRegex = /[^	 -~€-ÿ]/;
 
 function validateName(name) {
 	name = `${name}`;
@@ -26105,12 +26105,14 @@ const github_1 = __webpack_require__(5438);
 const ignore_1 = __importDefault(__webpack_require__(1230));
 const fs = __importStar(__webpack_require__(5747));
 const path = __importStar(__webpack_require__(5622));
+const child_process_1 = __webpack_require__(3129);
 let client;
 const getClient = () => client || (client = new github_1.GitHub(core_1.getInput('token')));
 exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
+const lastCommitHash = (file) => child_process_1.execSync(`git log -n 1 --pretty=format:%H -- ${file}`).toString('utf-8');
 exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
 - [ ] ${foundIn
-    .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`)
+    .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/${lastCommitHash(file)}/${file}#L${line})`)
     .join('
 - [ ] ')}
 
