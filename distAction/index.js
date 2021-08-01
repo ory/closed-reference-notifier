@@ -26094,12 +26094,14 @@ const github_1 = __webpack_require__(5438);
 const ignore_1 = __importDefault(__webpack_require__(1230));
 const fs = __importStar(__webpack_require__(5747));
 const path = __importStar(__webpack_require__(5622));
+const child_process_1 = __webpack_require__(3129);
 let client;
 const getClient = () => client || (client = new github_1.GitHub(core_1.getInput('token')));
 exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
+const lastCommitHash = (file) => child_process_1.execSync(`git log -n 1 --pretty=format:%H -- ${file}`).toString('utf-8');
 exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
 - [ ] ${foundIn
-    .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/master/${file}#L${line})`)
+    .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/${lastCommitHash(file)}/${file}#L${line})`)
     .join('\n- [ ] ')}
 
 This issue was created by the [ORY Closed Reference Notifier](https://github.com/ory/closed-reference-notifier) GitHub action.`;
