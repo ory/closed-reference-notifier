@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+-e #!/usr/bin/env node
 module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
@@ -18064,7 +18064,7 @@ if (
 ) {
   /* eslint no-control-regex: "off" */
   const makePosix = str => /^\\\?\/.test(str)
-  || /["<>| -]+/u.test(str)
+  || /["<>|\u0000-\u001F]+/u.test(str)
     ? str
     : str.replace(/\/g, '/')
 
@@ -18354,10 +18354,10 @@ var funcTag = '[object Function]',
     symbolTag = '[object Symbol]';
 
 /** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\]|\.)*?\1)\]/,
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!)[^\]|\.)*?)\]/,
     reIsPlainProp = /^\w*$/,
     reLeadingDot = /^\./,
-    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\]|\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!)[^\]|\.)*?))\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
 /**
  * Used to match `RegExp`
@@ -19293,10 +19293,10 @@ var funcTag = '[object Function]',
     symbolTag = '[object Symbol]';
 
 /** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\]|\.)*?\1)\]/,
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!)[^\]|\.)*?)\]/,
     reIsPlainProp = /^\w*$/,
     reLeadingDot = /^\./,
-    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\]|\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+    rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!)[^\]|\.)*?))\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
 /**
  * Used to match `RegExp`
@@ -21283,7 +21283,7 @@ class Blob {
 		this[BUFFER] = Buffer.concat(buffers);
 
 		let type = options && options.type !== undefined && String(options.type).toLowerCase();
-		if (type && !/[^ -~]/.test(type)) {
+		if (type && !/[^\u0020-\u007E]/.test(type)) {
 			this[TYPE] = type;
 		}
 	}
@@ -21689,14 +21689,14 @@ function convertBody(buffer, headers) {
 
 	// html5
 	if (!res && str) {
-		res = /<meta.+?charset=(['"])(.+?)\1/i.exec(str);
+		res = /<meta.+?charset=(['"])(.+?)/i.exec(str);
 	}
 
 	// html4
 	if (!res && str) {
-		res = /<meta[\s]+?http-equiv=(['"])content-type\1[\s]+?content=(['"])(.+?)\2/i.exec(str);
+		res = /<meta[\s]+?http-equiv=(['"])content-type[\s]+?content=(['"])(.+?)/i.exec(str);
 		if (!res) {
-			res = /<meta[\s]+?content=(['"])(.+?)\1[\s]+?http-equiv=(['"])content-type\3/i.exec(str);
+			res = /<meta[\s]+?content=(['"])(.+?)[\s]+?http-equiv=(['"])content-type/i.exec(str);
 			if (res) {
 				res.pop(); // drop last quote
 			}
@@ -21709,7 +21709,7 @@ function convertBody(buffer, headers) {
 
 	// xml
 	if (!res && str) {
-		res = /<\?xml.+?encoding=(['"])(.+?)\1/i.exec(str);
+		res = /<\?xml.+?encoding=(['"])(.+?)/i.exec(str);
 	}
 
 	// found charset
@@ -21898,7 +21898,7 @@ Body.Promise = global.Promise;
  */
 
 const invalidTokenRegex = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
-const invalidHeaderCharRegex = /[^	 -~€-ÿ]/;
+const invalidHeaderCharRegex = /[^	\x20-\x7e\x80-\xff]/;
 
 function validateName(name) {
 	name = `${name}`;
