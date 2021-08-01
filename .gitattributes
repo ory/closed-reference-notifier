@@ -1,2 +1,1 @@
-distAction linguist-generated
-distCli linguist-generated
+dist*/** linguist-generated
