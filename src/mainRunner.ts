@@ -17,7 +17,7 @@ import fs from 'fs'
 import walkdir from 'walkdir'
 import path from 'path'
 
-const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)/gm
+const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)(!!)?/gm
 
 export type Dependencies = typeof helpers & {
   labels: Array<string>
@@ -67,22 +67,33 @@ const mainRunner = ({
             : [
                 ...allIssues,
                 readFile(filePath).then<Reference[]>((data): Reference[] =>
-                  Array.from(data.toString().matchAll(referenceRegex)).map<
-                    Reference
-                  >((match) => ({
-                    reference: match[0],
-                    owner: match[1],
-                    repo: match[2],
-                    type: match[3],
-                    issueNumber: match[4],
-                    foundIn: [
-                      [
-                        path.relative(directory, filePath),
-                        data.toString().substr(0, match.index).split('\n')
-                          .length
-                      ]
-                    ]
-                  }))
+                  Array.from(data.toString().matchAll(referenceRegex)).reduce<
+                    Reference[]
+                  >(
+                    (all, match) =>
+                      match[5] != '!!'
+                        ? [
+                            ...all,
+                            {
+                              reference: match[0],
+                              owner: match[1],
+                              repo: match[2],
+                              type: match[3],
+                              issueNumber: match[4],
+                              foundIn: [
+                                [
+                                  path.relative(directory, filePath),
+                                  data
+                                    .toString()
+                                    .substr(0, match.index)
+                                    .split('\n').length
+                                ]
+                              ]
+                            }
+                          ]
+                        : all,
+                    []
+                  )
                 )
               ],
         []
@@ -93,7 +104,7 @@ const mainRunner = ({
           .flat(1)
           // reduce filters all duplicates but adds their foundIn to the kept instance
           .reduce<Reference[]>(
-            (all, ref, i) =>
+            (all, ref) =>
               all
                 .find((v) => v.reference === ref.reference)
                 ?.foundIn.push(ref.foundIn[0]) === undefined

@@ -257,4 +257,26 @@ describe('mainRunner works', () => {
       []
     )
   })
+
+  it('should ignore references with double exclamation mark', async () => {
+    const deps = mockDependencies({
+      issueExists: false,
+      referenceClosed: true,
+      path: dir,
+      issueLimit: 4
+    })
+    createFiles(dir, {
+      'bar.txt': 'github.com/testUser/testRepo/pull/420!!'
+    })
+    await mainRunner(deps)
+
+    expectCreated(
+      deps,
+      [
+        'github.com/testUser/testRepo/pull/42',
+        'github.com/testUser/testRepo/issues/1337'
+      ],
+      []
+    )
+  })
 })
