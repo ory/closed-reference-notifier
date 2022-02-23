@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { getInput, setFailed } from '@actions/core'
+import { getInput, setFailed, warning } from '@actions/core'
 import { GitHub } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import ignore, { Ignore } from 'ignore'
@@ -99,6 +99,15 @@ export const issueIsClosed = (reference: Reference): Promise<boolean> => {
       issue_number: parseInt(issueNumber)
     })
     .then((issue) => issue.data.state === 'closed')
+    .catch((reason) => {
+      if (reason.status === 404) {
+        warning(
+          `reference ${reference.reference} could not be found, please check token permissions or if that reference even exists`
+        )
+        return false
+      }
+      return Promise.reject(reason)
+    })
 }
 
 export const readIgnoreFiles = (dir: string = '.'): Promise<string[]> =>

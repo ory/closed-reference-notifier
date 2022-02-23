@@ -1,5 +1,5 @@
 import mainRunner, { Reference } from './mainRunner'
-import { issueBody, issueTitle, shouldIgnore } from './helpers'
+import { issueBody, issueIsClosed, issueTitle, shouldIgnore } from './helpers'
 import fs from 'fs'
 import path from 'path'
 
