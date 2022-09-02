@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import helpers from './helpers'
-import fs from 'fs'
-import walkdir from 'walkdir'
-import path from 'path'
+import helpers from "./helpers"
+import fs from "fs"
+import walkdir from "walkdir"
+import path from "path"
 
-const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)(!!)?/gm
+const referenceRegex =
+  /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)(!!)?/gm
 
 export type Dependencies = typeof helpers & {
   labels: Array<string>
@@ -52,14 +53,14 @@ const mainRunner = ({
   issueIsClosed,
   directory,
   issueBody,
-  issueLimit
+  issueLimit,
 }: Dependencies) =>
   walkdir.async(directory, { return_object: true }).then((files) =>
     Promise.all(
       Object.entries(files).reduce<Promise<Reference[]>[]>(
         (
           allIssues: Promise<Reference[]>[],
-          [filePath, stats]: [string, fs.Stats]
+          [filePath, stats]: [string, fs.Stats],
         ) =>
           stats.isDirectory() ||
           shouldIgnore(ignorePaths, path.relative(directory, filePath))
@@ -71,7 +72,7 @@ const mainRunner = ({
                     Reference[]
                   >(
                     (all, match) =>
-                      match[5] != '!!'
+                      match[5] != "!!"
                         ? [
                             ...all,
                             {
@@ -86,18 +87,18 @@ const mainRunner = ({
                                   data
                                     .toString()
                                     .substr(0, match.index)
-                                    .split('\n').length
-                                ]
-                              ]
-                            }
+                                    .split("\n").length,
+                                ],
+                              ],
+                            },
                           ]
                         : all,
-                    []
-                  )
-                )
+                    [],
+                  ),
+                ),
               ],
-        []
-      )
+        [],
+      ),
     )
       .then((references) =>
         references
@@ -110,29 +111,29 @@ const mainRunner = ({
                 ?.foundIn.push(ref.foundIn[0]) === undefined
                 ? [...all, ref]
                 : all,
-            []
-          )
+            [],
+          ),
       )
       .then((references) =>
         Promise.all(
           references.map<Promise<Reference | undefined>>((ref) =>
-            issueIsClosed(ref).then((closed) => (closed ? ref : undefined))
-          )
+            issueIsClosed(ref).then((closed) => (closed ? ref : undefined)),
+          ),
         ).then((references) =>
           Promise.all(
             references.map<Promise<Reference | undefined>>(
               (ref): Promise<Reference | undefined> =>
                 ref &&
                 issueExists(ref.reference).then((exists) =>
-                  !exists ? ref : undefined
-                )
-            )
+                  !exists ? ref : undefined,
+                ),
+            ),
           ).then((references) =>
             references.filter<Reference>(
-              (ref: Reference | undefined): ref is Reference => !!ref
-            )
-          )
-        )
+              (ref: Reference | undefined): ref is Reference => !!ref,
+            ),
+          ),
+        ),
       )
       .then((references) =>
         references.length > issueLimit
@@ -152,11 +153,11 @@ To still create them, please raise the limit temporarily, e.g. by manually trigg
                 repo: thisRepo,
                 labels,
                 title: issueTitle(reference),
-                body: issueBody(reference, type, thisOwner, thisRepo, foundIn)
-              })
-            )
+                body: issueBody(reference, type, thisOwner, thisRepo, foundIn),
+              }),
+            ),
       )
-      .catch(exitWithReason)
+      .catch(exitWithReason),
   )
 
 export default mainRunner

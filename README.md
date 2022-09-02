@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2-beta
         with:
-          node-version: '14'
+          node-version: "14"
       - uses: ory/closed-reference-notifier@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +69,7 @@ Verbose example with all inputs:
 ```yaml
 on:
   schedule:
-    - cron: '0 7 * * *'
+    - cron: "0 7 * * *"
 
 jobs:
   find_closed_references:
@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2-beta
         with:
-          node-version: '14'
+          node-version: "14"
       - uses: ory/closed-reference-notifier@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -110,7 +110,7 @@ on:
       issueLimit:
         description: maximum number of issues to create
         required: true
-        default: '5'
+        default: "5"
 
 jobs:
   find_closed_references:
@@ -120,7 +120,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2-beta
         with:
-          node-version: '14'
+          node-version: "14"
       - uses: ory/closed-reference-notifier@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,13 +1,13 @@
-import mainRunner from './mainRunner'
-import { readIgnoreFiles, shouldIgnore } from './helpers'
-import fs from 'fs'
+import mainRunner from "./mainRunner"
+import { readIgnoreFiles, shouldIgnore } from "./helpers"
+import fs from "fs"
 
-const [dir = '-h', ignore = '.git'] = process.argv.slice(2)
+const [dir = "-h", ignore = ".git"] = process.argv.slice(2)
 
 switch (dir) {
-  case '-help':
-  case '-h':
-  case '--help':
+  case "-help":
+  case "-h":
+  case "--help":
     console.log(`Usage:
 npx closed-reference-notifier <dir> <ignore>
 
@@ -19,15 +19,15 @@ npx closed-reference-notifier <dir> <ignore>
 
 ;(async () => {
   await mainRunner({
-    thisRepo: '',
-    thisOwner: '',
+    thisRepo: "",
+    thisOwner: "",
     issueExists: () => Promise.resolve(false),
-    issueTitle: () => '',
+    issueTitle: () => "",
     issueBody: (ref, type, thisOwner, thisRepo, files) =>
       `Found reference "${ref}" in files
-  ${files.map((file) => file.join('#')).join('\n  ')}`,
+  ${files.map((file) => file.join("#")).join("\n  ")}`,
     issueIsClosed: () => Promise.resolve(true),
-    ignorePaths: [...ignore.split(','), ...(await readIgnoreFiles(dir))],
+    ignorePaths: [...ignore.split(","), ...(await readIgnoreFiles(dir))],
     createIssue: (issue) => {
       console.log(issue.body)
       return Promise.resolve()
@@ -35,11 +35,11 @@ npx closed-reference-notifier <dir> <ignore>
     shouldIgnore,
     directory: dir,
     exitWithReason: (err: any) => {
-      console.log('unexpected error:', err)
+      console.log("unexpected error:", err)
       process.exit(1)
     },
     labels: [],
     readFile: fs.promises.readFile,
-    issueLimit: Number.POSITIVE_INFINITY
+    issueLimit: Number.POSITIVE_INFINITY,
   })
 })()
