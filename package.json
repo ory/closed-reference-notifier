@@ -37,7 +37,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@actions/core": "^1.2.6",
+    "@actions/core": "^1.9.1",
     "@actions/github": "^2.1.1",
     "ignore": "^5.1.4",
     "walkdir": "^0.4.1"
