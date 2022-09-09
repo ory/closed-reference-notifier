@@ -227,9 +227,11 @@ describe("mainRunner works", () => {
       [],
     )
 
-    expect(deps.issueBody.mock.calls[0][4]).toStrictEqual([
-      ["bar.txt", 1],
-      ["foo.txt", 1],
+    const have = deps.issueBody.mock.calls[0][4]
+    have.sort()
+    expect(have).toStrictEqual([
+      ['bar.txt', 1],
+      ['foo.txt', 1]
     ])
   })
 
