@@ -34604,13 +34604,13 @@ const fs = __importStar(__webpack_require__(5747));
 const path = __importStar(__webpack_require__(5622));
 const child_process_1 = __webpack_require__(3129);
 let client;
-const getClient = () => client || (client = new github_1.GitHub(core_1.getInput('token')));
+const getClient = () => client || (client = new github_1.GitHub(core_1.getInput("token")));
 exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
-const lastCommitHash = (file) => child_process_1.execSync(`git log -n 1 --pretty=format:%H -- ${file}`).toString('utf-8');
+const lastCommitHash = (file) => child_process_1.execSync(`git log -n 1 --pretty=format:%H -- ${file}`).toString("utf-8");
 exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
 - [ ] ${foundIn
     .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/${lastCommitHash(file)}/${file}#L${line})`)
-    .join('\n- [ ] ')}
+    .join("\n- [ ] ")}
 
 This issue was created by the [ORY Closed Reference Notifier](https://github.com/ory/closed-reference-notifier) GitHub action.`;
 exports.createIssue = (params) => getClient()
@@ -34633,7 +34633,7 @@ exports.issueExists = (reference) => getClient()
     }
   }
 }`)
-    .then(({ search: { nodes } }) => Promise.resolve(nodes.length !== 0));
+    .then(({ search: { nodes }, }) => Promise.resolve(nodes.length !== 0));
 exports.issueIsClosed = (reference) => {
     const { owner, repo, issueNumber, foundIn } = reference;
     console.log(`found reference to ${owner}/${repo}#${issueNumber} in\n${foundIn.map(([file, line]) => `  ${file}#${line}\n`)}`);
@@ -34641,9 +34641,9 @@ exports.issueIsClosed = (reference) => {
         .issues.get({
         owner,
         repo,
-        issue_number: parseInt(issueNumber)
+        issue_number: parseInt(issueNumber),
     })
-        .then((issue) => issue.data.state === 'closed')
+        .then((issue) => issue.data.state === "closed")
         .catch((reason) => {
         if (reason.status === 404) {
             core_1.warning(`reference ${reference.reference} could not be found, please check token permissions or if that reference even exists`);
@@ -34652,9 +34652,9 @@ exports.issueIsClosed = (reference) => {
         return Promise.reject(reason);
     });
 };
-exports.readIgnoreFiles = (dir = '.') => Promise.allSettled(['.reference-ignore', '.gitignore'].map((fn) => fs.promises.readFile(path.join(dir, fn)))).then((files) => files
-    .filter((file) => file.status === 'fulfilled')
-    .map((fulFilled) => fulFilled.value.toString().split('\n'))
+exports.readIgnoreFiles = (dir = ".") => Promise.allSettled([".reference-ignore", ".gitignore"].map((fn) => fs.promises.readFile(path.join(dir, fn)))).then((files) => files
+    .filter((file) => file.status === "fulfilled")
+    .map((fulFilled) => fulFilled.value.toString().split("\n"))
     .flat(1));
 exports.default = {
     issueExists: exports.issueExists,
@@ -34663,7 +34663,7 @@ exports.default = {
     createIssue: exports.createIssue,
     issueTitle: exports.issueTitle,
     issueIsClosed: exports.issueIsClosed,
-    issueBody: exports.issueBody
+    issueBody: exports.issueBody,
 };
 
 
@@ -34694,12 +34694,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const walkdir_1 = __importDefault(__webpack_require__(5200));
 const path_1 = __importDefault(__webpack_require__(5622));
 const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)(!!)?/gm;
-const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, labels, thisOwner, thisRepo, readFile, ignorePaths, issueIsClosed, directory, issueBody, issueLimit }) => walkdir_1.default.async(directory, { return_object: true }).then((files) => Promise.all(Object.entries(files).reduce((allIssues, [filePath, stats]) => stats.isDirectory() ||
+const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, labels, thisOwner, thisRepo, readFile, ignorePaths, issueIsClosed, directory, issueBody, issueLimit, }) => walkdir_1.default.async(directory, { return_object: true }).then((files) => Promise.all(Object.entries(files).reduce((allIssues, [filePath, stats]) => stats.isDirectory() ||
     shouldIgnore(ignorePaths, path_1.default.relative(directory, filePath))
     ? allIssues
     : [
         ...allIssues,
-        readFile(filePath).then((data) => Array.from(data.toString().matchAll(referenceRegex)).reduce((all, match) => match[5] != '!!'
+        readFile(filePath).then((data) => Array.from(data.toString().matchAll(referenceRegex)).reduce((all, match) => match[5] != "!!"
             ? [
                 ...all,
                 {
@@ -34714,12 +34714,12 @@ const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, iss
                             data
                                 .toString()
                                 .substr(0, match.index)
-                                .split('\n').length
-                        ]
-                    ]
-                }
+                                .split("\n").length,
+                        ],
+                    ],
+                },
             ]
-            : all, []))
+            : all, [])),
     ], []))
     .then((references) => references
     .flat(1)
@@ -34745,7 +34745,7 @@ To still create them, please raise the limit temporarily, e.g. by manually trigg
         repo: thisRepo,
         labels,
         title: issueTitle(reference),
-        body: issueBody(reference, type, thisOwner, thisRepo, foundIn)
+        body: issueBody(reference, type, thisOwner, thisRepo, foundIn),
     })))
     .catch(exitWithReason));
 exports.default = mainRunner;
@@ -34798,20 +34798,20 @@ const core_1 = __webpack_require__(2186);
 const fs_1 = __importDefault(__webpack_require__(5747));
 const helpers_1 = __importStar(__webpack_require__(3015));
 const mainRunner_1 = __importDefault(__webpack_require__(2765));
-const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2);
+const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split("/", 2);
 (async () => {
     await mainRunner_1.default({
         ...helpers_1.default,
         readFile: fs_1.default.promises.readFile,
         thisOwner,
         thisRepo,
-        labels: core_1.getInput('issueLabels').split(','),
+        labels: core_1.getInput("issueLabels").split(","),
         ignorePaths: [
-            ...core_1.getInput('ignore').split(','),
-            ...(await helpers_1.readIgnoreFiles())
+            ...core_1.getInput("ignore").split(","),
+            ...(await helpers_1.readIgnoreFiles()),
         ],
-        directory: '.',
-        issueLimit: parseInt(core_1.getInput('issueLimit')) || 5
+        directory: ".",
+        issueLimit: parseInt(core_1.getInput("issueLimit")) || 5,
     });
 })();
 
