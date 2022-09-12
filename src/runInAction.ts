@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { getInput } from '@actions/core'
-import fs from 'fs'
-import helpers, { readIgnoreFiles } from './helpers'
-import mainRunner from './mainRunner'
+import { getInput } from "@actions/core"
+import fs from "fs"
+import helpers, { readIgnoreFiles } from "./helpers"
+import mainRunner from "./mainRunner"
 
-const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
+const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split("/", 2)
 
 ;(async () => {
   await mainRunner({
@@ -25,12 +25,12 @@ const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split('/', 2)
     readFile: fs.promises.readFile,
     thisOwner,
     thisRepo,
-    labels: getInput('issueLabels').split(','),
+    labels: getInput("issueLabels").split(","),
     ignorePaths: [
-      ...getInput('ignore').split(','),
-      ...(await readIgnoreFiles())
+      ...getInput("ignore").split(","),
+      ...(await readIgnoreFiles()),
     ],
-    directory: '.',
-    issueLimit: parseInt(getInput('issueLimit')) || 5
+    directory: ".",
+    issueLimit: parseInt(getInput("issueLimit")) || 5,
   })
 })()

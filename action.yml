@@ -1,5 +1,7 @@
 name: Closed Reference Notifier
-description: GitHub action that opens an issue when a in-code refered issue/pull request is closed
+description:
+  GitHub action that opens an issue when a in-code refered issue/pull request is
+  closed
 inputs:
   token:
     description: secrets.GITHUB_TOKEN
@@ -15,14 +17,14 @@ inputs:
   issueLimit:
     description: the maximum number of issues to create
     required: false
-    default: '5'
+    default: "5"
 runs:
   using: composite
   steps:
-#    requires actions within actions as tracked in https://github.com/actions/runner/issues/646
-#    - uses: actions/setup-node@v2-beta
-#      with:
-#        node-version: '14'
+    #    requires actions within actions as tracked in https://github.com/actions/runner/issues/646
+    #    - uses: actions/setup-node@v2-beta
+    #      with:
+    #        node-version: '14'
     - run: node ${{ github.action_path }}/distAction/index.js
       shell: bash
       env:
