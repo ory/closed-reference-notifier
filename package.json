@@ -21,9 +21,7 @@
     "build:action": "ncc build src/runInAction.ts -o distAction",
     "watch": "tsc -w",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "test:watch": "jest --watch"
   },
   "prettier": "ory-prettier-styles",
   "dependencies": {
