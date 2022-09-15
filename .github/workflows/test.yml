@@ -15,7 +15,5 @@ jobs:
         with:
           node-version: "14"
       - run: npm ci
-      - name: Check format
-        run: npm run format:check
       - name: Run tests
         run: npm run test
