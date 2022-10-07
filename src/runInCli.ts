@@ -1,3 +1,5 @@
+// Copyright © 2022 Ory Corp
+
 import mainRunner from "./mainRunner"
 import { readIgnoreFiles, shouldIgnore } from "./helpers"
 import fs from "fs"

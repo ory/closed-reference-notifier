@@ -1,3 +1,5 @@
+// Copyright © 2022 Ory Corp
+
 import mainRunner, { Reference } from "./mainRunner"
 import { issueBody, issueIsClosed, issueTitle, shouldIgnore } from "./helpers"
 import fs from "fs"
