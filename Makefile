@@ -1,5 +1,5 @@
 format: .bin/ory node_modules   # formats the source code
-	.bin/ory dev headers license --exclude=distAction --exclude=distCli --exclude=jest.config.js
+	.bin/ory dev headers license
 	npm exec -- prettier --write .
 
 help:
