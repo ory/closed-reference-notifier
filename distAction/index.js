@@ -1,5 +1,3 @@
-// Copyright © 2022 Ory Corp
-
 module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
@@ -34562,6 +34560,45 @@ function wrappy (fn, cb) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.readIgnoreFiles = exports.issueIsClosed = exports.issueExists = exports.exitWithReason = exports.shouldIgnore = exports.createIssue = exports.issueBody = exports.issueTitle = void 0;
+const core_1 = __webpack_require__(2186);
+const github_1 = __webpack_require__(5438);
+const ignore_1 = __importDefault(__webpack_require__(1230));
+const fs = __importStar(__webpack_require__(5747));
+const path = __importStar(__webpack_require__(5622));
+const child_process_1 = __webpack_require__(3129);
+let client;
+const getClient = () => client || (client = new github_1.GitHub(core_1.getInput("token")));
+exports.issueTitle = (upstreamReference) => `upstream reference closed: ${upstreamReference}`;
+const lastCommitHash = (file) => child_process_1.execSync(`git log -n 1 --pretty=format:%H -- ${file}`).toString("utf-8");
+exports.issueBody = (upstreamReference, type, thisOwner, thisRepo, foundIn) => `The upstream [${type}](https://${upstreamReference}) got closed. It is referenced in:
+- [ ] ${foundIn
+    .map(([file, line]) => `[${file}#L${line}](https://github.com/${thisOwner}/${thisRepo}/blob/${lastCommitHash(file)}/${file}#L${line})`)
+    .join("\n- [ ] ")}
+
 This issue was created by the [ORY Closed Reference Notifier](https://github.com/ory/closed-reference-notifier) GitHub action.`;
 exports.createIssue = (params) => getClient()
     .issues.create(params)
@@ -34624,6 +34661,53 @@ exports.default = {
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const walkdir_1 = __importDefault(__webpack_require__(5200));
+const path_1 = __importDefault(__webpack_require__(5622));
+const referenceRegex = /github\.com\/([a-zA-Z\d-]+)\/([a-zA-Z\d._-]+)\/(pull|issues)\/(\d+)(!!)?/gm;
+const mainRunner = ({ shouldIgnore, exitWithReason, issueTitle, createIssue, issueExists, labels, thisOwner, thisRepo, readFile, ignorePaths, issueIsClosed, directory, issueBody, issueLimit, }) => walkdir_1.default.async(directory, { return_object: true }).then((files) => Promise.all(Object.entries(files).reduce((allIssues, [filePath, stats]) => stats.isDirectory() ||
+    shouldIgnore(ignorePaths, path_1.default.relative(directory, filePath))
+    ? allIssues
+    : [
+        ...allIssues,
+        readFile(filePath).then((data) => Array.from(data.toString().matchAll(referenceRegex)).reduce((all, match) => match[5] != "!!"
+            ? [
+                ...all,
+                {
+                    reference: match[0],
+                    owner: match[1],
+                    repo: match[2],
+                    type: match[3],
+                    issueNumber: match[4],
+                    foundIn: [
+                        [
+                            path_1.default.relative(directory, filePath),
+                            data
+                                .toString()
+                                .substr(0, match.index)
+                                .split("\n").length,
+                        ],
+                    ],
+                },
+            ]
+            : all, [])),
+    ], []))
+    .then((references) => references
+    .flat(1)
+    // reduce filters all duplicates but adds their foundIn to the kept instance
+    .reduce((all, ref) => all
+    .find((v) => v.reference === ref.reference)
+    ?.foundIn.push(ref.foundIn[0]) === undefined
+    ? [...all, ref]
+    : all, []))
+    .then((references) => Promise.all(references.map((ref) => issueIsClosed(ref).then((closed) => (closed ? ref : undefined)))).then((references) => Promise.all(references.map((ref) => ref &&
+    issueExists(ref.reference).then((exists) => !exists ? ref : undefined))).then((references) => references.filter((ref) => !!ref))))
+    .then((references) => references.length > issueLimit
+    ? exitWithReason(`Found too many closed references (${references.length}):
+
 I would create too many issues, here they are:
 
 ${JSON.stringify(references, null, 2)}
@@ -34647,6 +34731,50 @@ exports.default = mainRunner;
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core_1 = __webpack_require__(2186);
+const fs_1 = __importDefault(__webpack_require__(5747));
+const helpers_1 = __importStar(__webpack_require__(3015));
+const mainRunner_1 = __importDefault(__webpack_require__(2765));
+const [thisOwner, thisRepo] = process.env.GITHUB_REPOSITORY.split("/", 2);
+(async () => {
+    await mainRunner_1.default({
+        ...helpers_1.default,
+        readFile: fs_1.default.promises.readFile,
+        thisOwner,
+        thisRepo,
+        labels: core_1.getInput("issueLabels").split(","),
+        ignorePaths: [
+            ...core_1.getInput("ignore").split(","),
+            ...(await helpers_1.readIgnoreFiles()),
+        ],
+        directory: ".",
+        issueLimit: parseInt(core_1.getInput("issueLimit")) || 5,
+    });
+})();
 
 
 /***/ }),
@@ -34820,7 +34948,7 @@ module.exports = require("zlib");
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
+/******/
 /************************************************************************/
 /******/ 	/* webpack/runtime/node module decorator */
 /******/ 	(() => {
