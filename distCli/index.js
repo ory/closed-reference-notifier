@@ -82,16 +82,14 @@ class Command {
 function escapeData(s) {
     return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
-        .replace(/
-/g, '%0D')
+        .replace(//g, '%0D')
         .replace(/
 /g, '%0A');
 }
 function escapeProperty(s) {
     return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
-        .replace(/
-/g, '%0D')
+        .replace(//g, '%0D')
         .replace(/
 /g, '%0A')
         .replace(/:/g, '%3A')
@@ -17520,8 +17518,7 @@ function makeArray (subject) {
 const REGEX_TEST_BLANK_LINE = /^\s+$/
 const REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION = /^\!/
 const REGEX_REPLACE_LEADING_EXCAPED_HASH = /^\#/
-const REGEX_SPLITALL_CRLF = /
-?
+const REGEX_SPLITALL_CRLF = /?
 /g
 // /foo,
 // ./foo,
@@ -29790,9 +29787,7 @@ module.exports = function (x) {
 	var lf = typeof x === 'string' ? '
 ' : '
 '.charCodeAt();
-	var cr = typeof x === 'string' ? '
-' : '
-'.charCodeAt();
+	var cr = typeof x === 'string' ? '' : ''.charCodeAt();
 
 	if (x[x.length - 1] === lf) {
 		x = x.slice(0, x.length - 1);
