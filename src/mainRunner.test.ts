@@ -1,4 +1,5 @@
 // Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
 
 import mainRunner, { Reference } from "./mainRunner"
 import { issueBody, issueIsClosed, issueTitle, shouldIgnore } from "./helpers"
