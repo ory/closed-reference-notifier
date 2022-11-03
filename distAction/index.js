@@ -34560,6 +34560,8 @@ function wrappy (fn, cb) {
 
 "use strict";
 
+// Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -34661,6 +34663,8 @@ exports.default = {
 
 "use strict";
 
+// Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -34732,6 +34736,8 @@ exports.default = mainRunner;
 
 "use strict";
 
+// Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -34948,7 +34954,7 @@ module.exports = require("zlib");
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
+/******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/node module decorator */
 /******/ 	(() => {
